@@ -68,10 +68,10 @@ def get_model():
 
     model = Sequential()
     model.add(Dense(50, input_dim=68, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(50, input_dim=68, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(40, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(40, input_dim=68, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal'))
 
     model.compile(loss='mean_squared_error', optimizer='adam') # MSE loss b/c regression
@@ -97,9 +97,11 @@ def fit_to_data(model, *args, **kwargs): # Wrapper for keras model.fit( ... )
 def predict_sr(model, player):
     
     stats_vector = np.array([get_vector_gamestats(player, 'us', 'competitive')])
+    
     X = scaler_X.transform(stats_vector)
 
     y_matrix = model.predict(X)
+    
     sr = np.squeeze(scaler_y.inverse_transform(y_matrix))
     
     return int(sr)
@@ -113,15 +115,24 @@ X, y, scaler_X, scaler_y = scale_data(*load_data())
 
 model = get_model()
 
-history = fit_to_data(model, X, y, epochs=200, batch_size=128, validation_split=.10)
+history = fit_to_data(model, X, y, epochs=500, batch_size=128, validation_split=.10)
+
+model.save('overwatch-sr.h5')
 
 # Plot loss
 
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
-plt.title('model loss')
+plt.title('Model Loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper right')
+plt.legend(['Train', 'Test'], loc='upper right')
 plt.show()
+
+
+# In[8]:
+
+# Battletag Test
+
+predict_sr(model, Player.from_web_battletag('sshh12#1522'))
 
