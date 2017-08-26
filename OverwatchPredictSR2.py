@@ -5,7 +5,7 @@
 
 # Imports
 
-from OverwatchProcessData import get_competitive_rank, get_vector_gamestats
+from OverwatchProcessData import get_competitive_rank, get_vector_gamestats, general_stats
 from OverwatchGatherData import Player, find_usernames
 
 from sklearn.preprocessing import StandardScaler
@@ -22,6 +22,21 @@ np.random.seed(5)
 
 # In[2]:
 
+
+better_general_stats = ["kpd"]
+
+for stat in general_stats:
+    
+    if "avg" in stat:
+        
+        better_general_stats.append(stat)
+                                   
+
+better_general_stats
+
+
+# In[3]:
+
 # Load Data
 
 def load_data():
@@ -36,7 +51,7 @@ def load_data():
 
         if rank: # Only use data w/rank attached
 
-            unscaled_X.append(get_vector_gamestats(player, 'us', 'competitive'))
+            unscaled_X.append(get_vector_gamestats(player, 'us', 'competitive', stat_keys=better_general_stats))
             unscaled_y.append(rank)
 
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
@@ -45,33 +60,32 @@ def load_data():
     return unscaled_X, unscaled_y
 
 
-# In[3]:
+# In[4]:
 
 # Standardize Data
 
 def scale_data(unscaled_X, unscaled_y):
     
     scaler_X = StandardScaler()
-    scaler_y = StandardScaler(with_mean=False) # SR is 1-5000 so scaling w/mean has weird effects
 
     X = scaler_X.fit_transform(unscaled_X)
-    y = np.squeeze(scaler_y.fit_transform(unscaled_y.reshape(-1, 1)))
+    y = unscaled_y
     
-    return X, y, scaler_X, scaler_y
+    return X, y, scaler_X
 
 
-# In[4]:
+# In[5]:
 
 # Keras Model
 
 def get_model():
 
     model = Sequential()
-    model.add(Dense(50, input_dim=68, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.25))
-    model.add(Dense(40, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.25))
-    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(12, input_dim=13, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(20, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(50, kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal'))
 
     model.compile(loss='mean_squared_error', optimizer='adam') # MSE loss b/c regression
@@ -79,7 +93,7 @@ def get_model():
     return model
 
 
-# In[5]:
+# In[6]:
 
 # Learning function
 
@@ -90,34 +104,34 @@ def fit_to_data(model, *args, **kwargs): # Wrapper for keras model.fit( ... )
     return history
 
 
-# In[6]:
+# In[7]:
 
 # Predict SR
 
 def predict_sr(model, player):
     
-    stats_vector = np.array([get_vector_gamestats(player, 'us', 'competitive')])
+    stats_vector = np.array([get_vector_gamestats(player, 'us', 'competitive', stat_keys=better_general_stats)])
     
     X = scaler_X.transform(stats_vector)
 
     y_matrix = model.predict(X)
     
-    sr = np.squeeze(scaler_y.inverse_transform(y_matrix))
+    sr = np.squeeze(y_matrix)
     
     return int(sr)
 
 
-# In[7]:
+# In[8]:
 
 # Loads and trains model
 
-X, y, scaler_X, scaler_y = scale_data(*load_data())
+X, y, scaler_X = scale_data(*load_data())
 
 model = get_model()
 
 history = fit_to_data(model, X, y, epochs=500, batch_size=128, validation_split=.10)
 
-model.save('overwatch-sr-1.h5')
+model.save('overwatch-sr-2.h5')
 
 # Plot loss
 

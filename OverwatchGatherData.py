@@ -37,7 +37,17 @@ def get_user_json(battletag): # Battletag -> JSON
     
     battletag = battletag.replace('#', '-')
     
-    return requests.get('https://owapi.net/api/v3/u/{}/blob'.format(battletag), headers={'User-Agent':'OWAgent'}).text
+    text = requests.get('https://owapi.net/api/v3/u/{}/blob'.format(battletag), headers={'User-Agent':'OWAgent'}).text
+    
+    if "ratelimited" in text:
+        
+        time.sleep(4)
+        
+        return get_user_json(battletag)
+    
+    else:
+        
+        return text
 
 def save_profile(battletag): # Battletag -> file.json
     
@@ -59,12 +69,6 @@ def save_profile(battletag): # Battletag -> file.json
                 profile.write(data)
                 
             print('Saved: ' + battletag)
-            
-        elif "ratelimited" in data:
-            
-            time.sleep(8)
-            
-            save_profile(battletag)
             
         else:
             
@@ -98,7 +102,7 @@ class Player(object):
 
             return Player(json)
         
-        raise Exception('Battletag Error')
+        raise Exception('Battletag Error ' + json)
 
     def get_regions(self):
 
