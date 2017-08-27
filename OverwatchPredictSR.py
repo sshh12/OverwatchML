@@ -5,7 +5,7 @@
 
 # Imports
 
-from OverwatchProcessData import get_competitive_rank, get_vector_gamestats
+from OverwatchProcessData import get_competitive_rank, get_vector_gamestats, general_stats
 from OverwatchGatherData import Player, find_usernames
 
 from sklearn.preprocessing import StandardScaler
@@ -24,6 +24,14 @@ np.random.seed(5)
 
 # Load Data
 
+general_general_stats = ["kpd"]
+
+for stat in general_stats:
+
+    if "avg" in stat:
+
+        general_general_stats.append(stat)
+
 def load_data():
 
     unscaled_X, unscaled_y = [], []
@@ -37,6 +45,26 @@ def load_data():
         if rank: # Only use data w/rank attached
 
             unscaled_X.append(get_vector_gamestats(player, 'us', 'competitive'))
+            unscaled_y.append(rank)
+
+    unscaled_X = np.array(unscaled_X, dtype=np.float64)
+    unscaled_y = np.array(unscaled_y, dtype=np.float64)
+    
+    return unscaled_X, unscaled_y
+
+def load_data2():
+
+    unscaled_X, unscaled_y = [], []
+
+    for filename in os.listdir('profiles'):
+
+        player = Player.from_file(os.path.join('profiles', filename))
+
+        rank = get_competitive_rank(player, 'us')
+
+        if rank: # Only use data w/rank attached
+
+            unscaled_X.append(get_vector_gamestats(player, 'us', 'competitive', stat_keys=general_general_stats))
             unscaled_y.append(rank)
 
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
@@ -59,6 +87,15 @@ def scale_data(unscaled_X, unscaled_y):
     
     return X, y, scaler_X, scaler_y
 
+def scale_data2(unscaled_X, unscaled_y):
+    
+    scaler_X = StandardScaler()
+
+    X = scaler_X.fit_transform(unscaled_X)
+    y = unscaled_y
+    
+    return X, y, scaler_X
+
 
 # In[4]:
 
@@ -78,12 +115,32 @@ def get_model():
     
     return model
 
+def get_model2():
+
+    model = Sequential()
+    model.add(Dense(12, input_dim=13, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(20, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(50, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(1, kernel_initializer='normal'))
+
+    model.compile(loss='mean_squared_error', optimizer='adam') # MSE loss b/c regression
+    
+    return model
+
 
 # In[5]:
 
-# Learning function
+# Learning function. Wrapper for keras model.fit( ... )
 
-def fit_to_data(model, *args, **kwargs): # Wrapper for keras model.fit( ... )
+def fit_to_data(model, *args, **kwargs):
+
+    history = model.fit(*args, **kwargs, shuffle=True, verbose=0)
+    
+    return history
+
+def fit_to_data2(model, *args, **kwargs):
 
     history = model.fit(*args, **kwargs, shuffle=True, verbose=0)
     
@@ -106,10 +163,24 @@ def predict_sr(model, player):
     
     return int(sr)
 
+def predict_sr2(model, player):
+    
+    stats_vector = np.array([get_vector_gamestats(player, 'us', 'competitive', stat_keys=general_general_stats)])
+    
+    X = scaler_X2.transform(stats_vector)
+
+    y_matrix = model.predict(X)
+    
+    sr = np.squeeze(y_matrix)
+    
+    return int(sr)
+
 
 # In[7]:
 
 # Loads and trains model
+
+# Model 1
 
 X, y, scaler_X, scaler_y = scale_data(*load_data())
 
@@ -119,18 +190,36 @@ history = fit_to_data(model, X, y, epochs=500, batch_size=128, validation_split=
 
 model.save('overwatch-sr-1.h5')
 
+# Model 2
+
+X2, y2, scaler_X2 = scale_data2(*load_data2())
+
+model2 = get_model2()
+
+history2 = fit_to_data2(model2, X2, y2, epochs=500, batch_size=128, validation_split=.10)
+
+model2.save('overwatch-sr-2.h5')
+
 # Plot loss
 
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
+plt.plot(np.log(history.history['loss']))
+plt.plot(np.log(history.history['val_loss']))
 plt.title('Model Loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['Train', 'Test'], loc='upper right')
 plt.show()
 
+plt.plot(np.log(history2.history['loss']))
+plt.plot(np.log(history2.history['val_loss']))
+plt.title('Model2 Loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['Train', 'Test'], loc='upper right')
+plt.show()
 
-# In[ ]:
+
+# In[8]:
 
 
 with open('test_names.txt', 'r') as test:
@@ -139,5 +228,9 @@ with open('test_names.txt', 'r') as test:
         
         player = Player.from_web_battletag(battletag)
         
-        print("{} is {}, predicted {}".format(battletag, predict_sr(model, player), get_competitive_rank(player, 'us')))
+        actual = get_competitive_rank(player, 'us')
+        p1 = predict_sr(model, player)
+        p2 = predict_sr2(model2, player)
+        
+        print("{} is {}, predicted {}, {}".format(battletag, actual, p1, p2))
 
