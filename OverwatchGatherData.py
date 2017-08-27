@@ -169,6 +169,8 @@ def dl_spreedsheet(): # Retrieves all 1000+ battletags from the spreedsheet
 
 # In[7]:
 
+# Run
+
 # dl_spreedsheet()
 # dl_reddit()
 
