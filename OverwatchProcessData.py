@@ -93,6 +93,31 @@ def get_vector_herostats(player, region, gametype="competitive", stat_keys=None)
 
 # In[5]:
 
+
+def get_vector_combined(player, region, gametype="competitive", stat_keys_general=None, stat_keys_heros=None):
+    
+    if not stat_keys_general:
+        
+        stat_keys_general = general_stats
+        
+    if not stat_keys_heros:
+        
+        stat_keys_heros = hero_stats
+        
+    vector_1 = get_vector_gamestats(player, region, gametype, stat_keys=stat_keys_general)
+    vector_2 = get_vector_herostats(player, region, gametype, stat_keys=stat_keys_heros)
+    
+    try:
+        
+        return np.concatenate([vector_1, vector_2])
+    
+    except:
+    
+        return False
+
+
+# In[6]:
+
 # Player Data Structure
 
 gametype = ['competitive', 'quickplay']

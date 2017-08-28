@@ -5,13 +5,12 @@
 
 # Imports
 
-from OverwatchProcessData import get_competitive_rank, get_vector_gamestats, get_vector_herostats, general_stats, hero_stats
+from OverwatchProcessData import get_competitive_rank, get_vector_gamestats, get_vector_herostats, get_vector_combined, general_stats, hero_stats
 from OverwatchGatherData import Player, find_usernames
 
 from sklearn.preprocessing import StandardScaler
 from keras.layers import Dense, Dropout
-from keras.models import load_model
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 
 import matplotlib.pyplot as plt
 
@@ -121,6 +120,28 @@ def load_data4():
     
     return unscaled_X, unscaled_y
 
+def load_data5():
+
+    unscaled_X, unscaled_y = [], []
+
+    for filename in os.listdir('profiles'):
+
+        player = Player.from_file(os.path.join('profiles', filename))
+
+        rank = get_competitive_rank(player, 'us')
+
+        if rank:
+
+            unscaled_X.append(get_vector_combined(player, 'us'))
+            unscaled_y.append(rank)
+
+    unscaled_X = np.array(unscaled_X, dtype=np.float64)
+    unscaled_y = np.array(unscaled_y, dtype=np.float64)
+    
+    print(unscaled_X.shape)
+    
+    return unscaled_X, unscaled_y
+
 
 # In[3]:
 
@@ -141,7 +162,7 @@ def scale_data2(unscaled_X, unscaled_y):
     scaler_X = StandardScaler()
 
     X = scaler_X.fit_transform(unscaled_X)
-    y = unscaled_y
+    y = unscaled_y / 5000
     
     return X, y, scaler_X
 
@@ -176,9 +197,9 @@ def get_model2(from_file=False):
         
         model = Sequential()
         model.add(Dense(13, input_dim=13, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.1))
+        model.add(Dropout(0.25))
         model.add(Dense(25, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.1))
+        model.add(Dropout(0.25))
         model.add(Dense(50, kernel_initializer='normal', activation='relu'))
         model.add(Dense(1, kernel_initializer='normal'))
 
@@ -195,11 +216,11 @@ def get_model3(from_file=False):
     if not from_file:
         
         model = Sequential()
-        model.add(Dense(30, input_dim=3090, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(30, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(50, input_dim=3090, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.4))
+        model.add(Dense(50, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.4))
+        model.add(Dense(50, kernel_initializer='normal', activation='relu'))
         model.add(Dense(1, kernel_initializer='normal'))
 
         model.compile(loss='mean_squared_error', optimizer='adam')
@@ -227,6 +248,26 @@ def get_model4(from_file=False):
     else:
         
         model = load_model('overwatch-sr-4.h5')
+    
+    return model
+
+def get_model5(from_file=False):
+    
+    if not from_file:
+        
+        model = Sequential()
+        model.add(Dense(50, input_dim=3158, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(50, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(50, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(1, kernel_initializer='normal'))
+
+        model.compile(loss='mean_squared_error', optimizer='adam')
+        
+    else:
+        
+        model = load_model('overwatch-sr-5.h5')
     
     return model
 
@@ -266,7 +307,7 @@ def predict_sr2(model, player):
 
     y_matrix = model.predict(X)
     
-    sr = np.squeeze(y_matrix)
+    sr = np.squeeze(y_matrix) * 5000
     
     return int(sr)
 
@@ -278,7 +319,7 @@ def predict_sr3(model, player):
 
     y_matrix = model.predict(X)
     
-    sr = np.squeeze(y_matrix)
+    sr = np.squeeze(y_matrix) * 5000
     
     return int(sr)
 
@@ -290,7 +331,19 @@ def predict_sr4(model, player):
 
     y_matrix = model.predict(X)
     
-    sr = np.squeeze(y_matrix)
+    sr = np.squeeze(y_matrix) * 5000
+    
+    return int(sr)
+
+def predict_sr5(model, player):
+    
+    stats_vector = np.array([get_vector_combined(player, 'us')])
+    
+    X = scaler_X5.transform(stats_vector)
+
+    y_matrix = model.predict(X)
+    
+    sr = np.squeeze(y_matrix) * 5000
     
     return int(sr)
 
@@ -371,6 +424,21 @@ model4.save('overwatch-sr-4.h5')
 view(history4)
 
 
+# In[12]:
+
+# Model 5
+
+X5, y5, scaler_X5 = scale_data2(*load_data5())
+
+model5 = get_model5()
+
+history5 = train_model(model5, X5, y5, epochs=500, batch_size=128, validation_split=.10)
+
+model5.save('overwatch-sr-5.h5')
+
+view(history4)
+
+
 # In[ ]:
 
 
@@ -385,6 +453,7 @@ with open('test_names.txt', 'r') as test:
         p2 = predict_sr2(model2, player)
         p3 = predict_sr3(model3, player)
         p4 = predict_sr4(model4, player)
+        p5 = predict_sr5(model5, player)
         
-        print("{} is {}, predicted {}, {}, {}, {}".format(battletag, actual, p1, p2, p3, p4))
+        print("{} is {}, predicted {}, {}, {}, {}, {}".format(battletag, actual, p1, p2, p3, p4, p5))
 
