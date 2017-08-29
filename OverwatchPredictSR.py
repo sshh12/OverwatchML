@@ -3,6 +3,7 @@
 
 # In[1]:
 
+
 # Imports
 
 from OverwatchProcessData import get_competitive_rank, get_vector_gamestats, get_vector_herostats, get_vector_combined, general_stats, hero_stats
@@ -21,6 +22,7 @@ np.random.seed(5)
 
 
 # In[2]:
+
 
 # Load Data
 
@@ -49,11 +51,17 @@ def load_data():
         player = Player.from_file(os.path.join('profiles', filename))
 
         rank = get_competitive_rank(player, 'us')
+        rank2 = get_competitive_rank(player, 'eu')
 
         if rank: # Only use data w/rank attached
 
             unscaled_X.append(get_vector_gamestats(player, 'us'))
             unscaled_y.append(rank)
+            
+        if rank2:
+
+            unscaled_X.append(get_vector_gamestats(player, 'eu'))
+            unscaled_y.append(rank2)
 
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
     unscaled_y = np.array(unscaled_y, dtype=np.float64)
@@ -69,11 +77,17 @@ def load_data2():
         player = Player.from_file(os.path.join('profiles', filename))
 
         rank = get_competitive_rank(player, 'us')
+        rank2 = get_competitive_rank(player, 'eu')
 
         if rank:
 
             unscaled_X.append(get_vector_gamestats(player, 'us', stat_keys=general_general_stats))
             unscaled_y.append(rank)
+            
+        if rank2:
+            
+            unscaled_X.append(get_vector_gamestats(player, 'eu', stat_keys=general_general_stats))
+            unscaled_y.append(rank2)
 
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
     unscaled_y = np.array(unscaled_y, dtype=np.float64)
@@ -89,11 +103,17 @@ def load_data3():
         player = Player.from_file(os.path.join('profiles', filename))
 
         rank = get_competitive_rank(player, 'us')
+        rank2 = get_competitive_rank(player, 'eu')
 
         if rank:
 
             unscaled_X.append(get_vector_herostats(player, 'us'))
             unscaled_y.append(rank)
+            
+        if rank2:
+            
+            unscaled_X.append(get_vector_herostats(player, 'eu'))
+            unscaled_y.append(rank2)
 
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
     unscaled_y = np.array(unscaled_y, dtype=np.float64)
@@ -109,11 +129,17 @@ def load_data4():
         player = Player.from_file(os.path.join('profiles', filename))
 
         rank = get_competitive_rank(player, 'us')
+        rank2 = get_competitive_rank(player, 'eu')
 
         if rank:
 
             unscaled_X.append(get_vector_herostats(player, 'us', stat_keys=general_hero_stats))
             unscaled_y.append(rank)
+            
+        if rank2:
+            
+            unscaled_X.append(get_vector_herostats(player, 'eu', stat_keys=general_hero_stats))
+            unscaled_y.append(rank2)
 
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
     unscaled_y = np.array(unscaled_y, dtype=np.float64)
@@ -129,11 +155,17 @@ def load_data5():
         player = Player.from_file(os.path.join('profiles', filename))
 
         rank = get_competitive_rank(player, 'us')
+        rank2 = get_competitive_rank(player, 'eu')
 
         if rank:
 
             unscaled_X.append(get_vector_combined(player, 'us'))
             unscaled_y.append(rank)
+            
+        if rank2:
+            
+            unscaled_X.append(get_vector_combined(player, 'eu'))
+            unscaled_y.append(rank2)
 
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
     unscaled_y = np.array(unscaled_y, dtype=np.float64)
@@ -144,6 +176,7 @@ def load_data5():
 
 
 # In[3]:
+
 
 # Standardize Data
 
@@ -169,6 +202,7 @@ def scale_data2(unscaled_X, unscaled_y):
 
 # In[4]:
 
+
 # Keras Model
 
 def get_model(from_file=False):
@@ -187,7 +221,7 @@ def get_model(from_file=False):
         
     else:
         
-        model = load_model('overwatch-sr-1.h5')
+        model = load_model(os.path.join('models', 'overwatch-sr-1.h5'))
     
     return model
 
@@ -207,7 +241,7 @@ def get_model2(from_file=False):
         
     else:
         
-        model = load_model('overwatch-sr-2.h5')
+        model = load_model(os.path.join('models', 'overwatch-sr-2.h5'))
     
     return model
 
@@ -227,7 +261,7 @@ def get_model3(from_file=False):
         
     else:
         
-        model = load_model('overwatch-sr-3.h5')
+        model = load_model(os.path.join('models', 'overwatch-sr-3.h5'))
     
     return model
 
@@ -236,18 +270,18 @@ def get_model4(from_file=False):
     if not from_file:
         
         model = Sequential()
-        model.add(Dense(30, input_dim=410, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(30, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(20, input_dim=410, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.4))
+        model.add(Dense(20, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.4))
+        model.add(Dense(20, kernel_initializer='normal', activation='relu'))
         model.add(Dense(1, kernel_initializer='normal'))
 
         model.compile(loss='mean_squared_error', optimizer='adam')
         
     else:
         
-        model = load_model('overwatch-sr-4.h5')
+        model = load_model(os.path.join('models', 'overwatch-sr-4.h5'))
     
     return model
 
@@ -256,23 +290,24 @@ def get_model5(from_file=False):
     if not from_file:
         
         model = Sequential()
-        model.add(Dense(50, input_dim=3158, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(50, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(50, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(20, input_dim=3158, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.4))
+        model.add(Dense(20, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.4))
+        model.add(Dense(20, kernel_initializer='normal', activation='relu'))
         model.add(Dense(1, kernel_initializer='normal'))
 
         model.compile(loss='mean_squared_error', optimizer='adam')
         
     else:
         
-        model = load_model('overwatch-sr-5.h5')
+        model = load_model(os.path.join('models', 'overwatch-sr-5.h5'))
     
     return model
 
 
 # In[5]:
+
 
 # Learning function. Wrapper for keras model.fit( ... )
 
@@ -284,6 +319,7 @@ def train_model(model, *args, **kwargs):
 
 
 # In[6]:
+
 
 # Predict SR
 
@@ -350,6 +386,7 @@ def predict_sr5(model, player):
 
 # In[7]:
 
+
 # Stats
 
 def view(history):
@@ -366,20 +403,22 @@ def view(history):
 
 # In[8]:
 
+
 # Model 1
 
 X, y, scaler_X, scaler_y = scale_data(*load_data())
 
 model = get_model()
 
-history = train_model(model, X, y, epochs=500, batch_size=128, validation_split=.10)
+history = train_model(model, X, y, epochs=500, batch_size=100, validation_split=.10)
 
-model.save('overwatch-sr-1.h5')
+model.save(os.path.join('models', 'overwatch-sr-1.h5'))
 
 view(history)
 
 
 # In[9]:
+
 
 # Model 2
 
@@ -387,14 +426,15 @@ X2, y2, scaler_X2 = scale_data2(*load_data2())
 
 model2 = get_model2()
 
-history2 = train_model(model2, X2, y2, epochs=500, batch_size=128, validation_split=.10)
+history2 = train_model(model2, X2, y2, epochs=500, batch_size=100, validation_split=.10)
 
-model2.save('overwatch-sr-2.h5')
+model2.save(os.path.join('models', 'overwatch-sr-2.h5'))
 
 view(history2)
 
 
 # In[10]:
+
 
 # Model 3
 
@@ -402,14 +442,15 @@ X3, y3, scaler_X3 = scale_data2(*load_data3())
 
 model3 = get_model3()
 
-history3 = train_model(model3, X3, y3, epochs=500, batch_size=128, validation_split=.10)
+history3 = train_model(model3, X3, y3, epochs=500, batch_size=100, validation_split=.10)
 
-model3.save('overwatch-sr-3.h5')
+model3.save(os.path.join('models', 'overwatch-sr-3.h5'))
 
 view(history3)
 
 
 # In[11]:
+
 
 # Model 4
 
@@ -417,14 +458,15 @@ X4, y4, scaler_X4 = scale_data2(*load_data4())
 
 model4 = get_model4()
 
-history4 = train_model(model4, X4, y4, epochs=500, batch_size=128, validation_split=.10)
+history4 = train_model(model4, X4, y4, epochs=500, batch_size=100, validation_split=.10)
 
-model4.save('overwatch-sr-4.h5')
+model4.save(os.path.join('models', 'overwatch-sr-4.h5'))
 
 view(history4)
 
 
 # In[12]:
+
 
 # Model 5
 
@@ -432,14 +474,15 @@ X5, y5, scaler_X5 = scale_data2(*load_data5())
 
 model5 = get_model5()
 
-history5 = train_model(model5, X5, y5, epochs=500, batch_size=128, validation_split=.10)
+history5 = train_model(model5, X5, y5, epochs=500, batch_size=100, validation_split=.10)
 
-model5.save('overwatch-sr-5.h5')
+model5.save(os.path.join('models', 'overwatch-sr-5.h5'))
 
 view(history4)
 
 
-# In[ ]:
+# In[13]:
+
 
 
 with open('test_names.txt', 'r') as test:
