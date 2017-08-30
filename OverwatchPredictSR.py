@@ -26,6 +26,8 @@ np.random.seed(5)
 
 # Load Data
 
+## Creating Custom Metrics
+
 general_general_stats = ["kpd"]
 
 for stat in general_stats:
@@ -41,14 +43,20 @@ for stat in hero_stats:
     if "avg" in stat:
 
         general_hero_stats.append(stat)
+        
+## Loading Data
+        
+def generate_players():
+    
+    for filename in os.listdir('profiles'):
+        
+        yield Player.from_file(os.path.join('profiles', filename))
 
 def load_data():
 
     unscaled_X, unscaled_y = [], []
 
-    for filename in os.listdir('profiles'):
-
-        player = Player.from_file(os.path.join('profiles', filename))
+    for player in generate_players():
 
         rank = get_competitive_rank(player, 'us')
         rank2 = get_competitive_rank(player, 'eu')
@@ -72,9 +80,7 @@ def load_data2():
 
     unscaled_X, unscaled_y = [], []
 
-    for filename in os.listdir('profiles'):
-
-        player = Player.from_file(os.path.join('profiles', filename))
+    for player in generate_players():
 
         rank = get_competitive_rank(player, 'us')
         rank2 = get_competitive_rank(player, 'eu')
@@ -98,9 +104,7 @@ def load_data3():
 
     unscaled_X, unscaled_y = [], []
 
-    for filename in os.listdir('profiles'):
-
-        player = Player.from_file(os.path.join('profiles', filename))
+    for player in generate_players():
 
         rank = get_competitive_rank(player, 'us')
         rank2 = get_competitive_rank(player, 'eu')
@@ -124,9 +128,7 @@ def load_data4():
 
     unscaled_X, unscaled_y = [], []
 
-    for filename in os.listdir('profiles'):
-
-        player = Player.from_file(os.path.join('profiles', filename))
+    for player in generate_players():
 
         rank = get_competitive_rank(player, 'us')
         rank2 = get_competitive_rank(player, 'eu')
@@ -150,9 +152,7 @@ def load_data5():
 
     unscaled_X, unscaled_y = [], []
 
-    for filename in os.listdir('profiles'):
-
-        player = Player.from_file(os.path.join('profiles', filename))
+    for player in generate_players():
 
         rank = get_competitive_rank(player, 'us')
         rank2 = get_competitive_rank(player, 'eu')
@@ -169,8 +169,6 @@ def load_data5():
 
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
     unscaled_y = np.array(unscaled_y, dtype=np.float64)
-    
-    print(unscaled_X.shape)
     
     return unscaled_X, unscaled_y
 
@@ -210,11 +208,11 @@ def get_model(from_file=False):
     if not from_file:
 
         model = Sequential()
-        model.add(Dense(50, input_dim=68, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(40, input_dim=68, kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.25))
         model.add(Dense(40, kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.25))
-        model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(40, kernel_initializer='normal', activation='relu'))
         model.add(Dense(1, kernel_initializer='normal'))
 
         model.compile(loss='mean_squared_error', optimizer='adam') # MSE loss b/c regression
@@ -232,9 +230,9 @@ def get_model2(from_file=False):
         model = Sequential()
         model.add(Dense(13, input_dim=13, kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.25))
-        model.add(Dense(25, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(13, kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.25))
-        model.add(Dense(50, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(13, kernel_initializer='normal', activation='relu'))
         model.add(Dense(1, kernel_initializer='normal'))
 
         model.compile(loss='mean_squared_error', optimizer='adam')
@@ -250,11 +248,11 @@ def get_model3(from_file=False):
     if not from_file:
         
         model = Sequential()
-        model.add(Dense(50, input_dim=3090, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.4))
-        model.add(Dense(50, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.4))
-        model.add(Dense(50, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(8, input_dim=3090, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
         model.add(Dense(1, kernel_initializer='normal'))
 
         model.compile(loss='mean_squared_error', optimizer='adam')
@@ -270,11 +268,11 @@ def get_model4(from_file=False):
     if not from_file:
         
         model = Sequential()
-        model.add(Dense(20, input_dim=410, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.4))
-        model.add(Dense(20, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.4))
-        model.add(Dense(20, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(8, input_dim=410, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
         model.add(Dense(1, kernel_initializer='normal'))
 
         model.compile(loss='mean_squared_error', optimizer='adam')
@@ -291,9 +289,7 @@ def get_model5(from_file=False):
         
         model = Sequential()
         model.add(Dense(20, input_dim=3158, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.4))
-        model.add(Dense(20, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.4))
+        model.add(Dropout(0.5))
         model.add(Dense(20, kernel_initializer='normal', activation='relu'))
         model.add(Dense(1, kernel_initializer='normal'))
 
@@ -410,7 +406,7 @@ X, y, scaler_X, scaler_y = scale_data(*load_data())
 
 model = get_model()
 
-history = train_model(model, X, y, epochs=500, batch_size=100, validation_split=.10)
+history = train_model(model, X, y, epochs=400, batch_size=100, validation_split=.10)
 
 model.save(os.path.join('models', 'overwatch-sr-1.h5'))
 
@@ -422,11 +418,11 @@ view(history)
 
 # Model 2
 
-X2, y2, scaler_X2 = scale_data2(*load_data2())
+X, y, scaler_X2 = scale_data2(*load_data2())
 
 model2 = get_model2()
 
-history2 = train_model(model2, X2, y2, epochs=500, batch_size=100, validation_split=.10)
+history2 = train_model(model2, X, y, epochs=200, batch_size=100, validation_split=.10)
 
 model2.save(os.path.join('models', 'overwatch-sr-2.h5'))
 
@@ -438,11 +434,11 @@ view(history2)
 
 # Model 3
 
-X3, y3, scaler_X3 = scale_data2(*load_data3())
+X, y, scaler_X3 = scale_data2(*load_data3())
 
 model3 = get_model3()
 
-history3 = train_model(model3, X3, y3, epochs=500, batch_size=100, validation_split=.10)
+history3 = train_model(model3, X, y, epochs=500, batch_size=100, validation_split=.10)
 
 model3.save(os.path.join('models', 'overwatch-sr-3.h5'))
 
@@ -454,11 +450,11 @@ view(history3)
 
 # Model 4
 
-X4, y4, scaler_X4 = scale_data2(*load_data4())
+X, y, scaler_X4 = scale_data2(*load_data4())
 
 model4 = get_model4()
 
-history4 = train_model(model4, X4, y4, epochs=500, batch_size=100, validation_split=.10)
+history4 = train_model(model4, X, y, epochs=500, batch_size=100, validation_split=.10)
 
 model4.save(os.path.join('models', 'overwatch-sr-4.h5'))
 
@@ -470,18 +466,18 @@ view(history4)
 
 # Model 5
 
-X5, y5, scaler_X5 = scale_data2(*load_data5())
+X, y, scaler_X5 = scale_data2(*load_data5())
 
 model5 = get_model5()
 
-history5 = train_model(model5, X5, y5, epochs=500, batch_size=100, validation_split=.10)
+history5 = train_model(model5, X, y, epochs=500, batch_size=100, validation_split=.10)
 
 model5.save(os.path.join('models', 'overwatch-sr-5.h5'))
 
 view(history4)
 
 
-# In[13]:
+# In[ ]:
 
 
 
@@ -497,6 +493,7 @@ with open('test_names.txt', 'r') as test:
         p3 = predict_sr3(model3, player)
         p4 = predict_sr4(model4, player)
         p5 = predict_sr5(model5, player)
+        avg = (p1 + p2 + p3 + p4 + p5) / 5.
         
-        print("{} is {}, predicted {}, {}, {}, {}, {}".format(battletag, actual, p1, p2, p3, p4, p5))
+        print("{} is {}, predicted {}, {}, {}, {}, {}, avg {}".format(battletag, actual, p1, p2, p3, p4, p5, avg))
 
