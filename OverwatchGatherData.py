@@ -3,7 +3,6 @@
 
 # In[1]:
 
-
 # Imports
 
 import requests
@@ -17,14 +16,12 @@ import os
 
 # In[2]:
 
-
 # Reddit Config
 
 # reddit = praw.Reddit(client_id='', client_secret='', user_agent='')
 
 
 # In[3]:
-
 
 # Tools
 
@@ -81,7 +78,6 @@ def save_profile(battletag): # Battletag -> file.json
 
 # In[4]:
 
-
 # Player Object
 
 class Player(object):
@@ -123,7 +119,6 @@ class Player(object):
 
 # In[5]:
 
-
 # Reddit Data
 
 subreddits = ['Overwatch', 'CompetitiveOverwatch', 'OverwatchUniversity', 'Overwatch_Memes', 'Overwatched', 'OverwatchCustomGames',
@@ -154,7 +149,6 @@ def dl_reddit(): # Gathers data from reddit
 
 # In[6]:
 
-
 # Reddit Spreedsheet Data
 # Thanks to https://www.reddit.com/r/Overwatch/comments/3qqs44/official_find_friends_by_posting_your_battletag/
 
@@ -174,7 +168,6 @@ def dl_spreedsheet(): # Retrieves all 1000+ battletags from the spreedsheet
 
 
 # In[7]:
-
 
 # Run
 

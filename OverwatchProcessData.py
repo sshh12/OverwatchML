@@ -3,7 +3,6 @@
 
 # In[1]:
 
-
 # Imports
 
 import numpy as np
@@ -11,7 +10,6 @@ import os
 
 
 # In[2]:
-
 
 
 def get_competitive_rank(player, region):
@@ -26,7 +24,6 @@ def get_competitive_rank(player, region):
 
 
 # In[3]:
-
 
 
 def get_vector_gamestats(player, region, gametype="competitive", stat_keys=None):
@@ -63,7 +60,6 @@ def get_vector_gamestats(player, region, gametype="competitive", stat_keys=None)
 # In[4]:
 
 
-
 def get_vector_herostats(player, region, gametype="competitive", stat_keys=None):
     
     if not stat_keys:
@@ -98,7 +94,6 @@ def get_vector_herostats(player, region, gametype="competitive", stat_keys=None)
 # In[5]:
 
 
-
 def get_vector_combined(player, region, gametype="competitive", stat_keys_general=None, stat_keys_heros=None):
     
     if not stat_keys_general:
@@ -122,7 +117,6 @@ def get_vector_combined(player, region, gametype="competitive", stat_keys_genera
 
 
 # In[6]:
-
 
 # Player Data Structure
 

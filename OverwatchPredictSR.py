@@ -3,7 +3,6 @@
 
 # In[1]:
 
-
 # Imports
 
 from OverwatchProcessData import get_competitive_rank, get_vector_gamestats, get_vector_herostats, get_vector_combined, general_stats, hero_stats
@@ -22,7 +21,6 @@ np.random.seed(5)
 
 
 # In[2]:
-
 
 # Load Data
 
@@ -175,7 +173,6 @@ def load_data5():
 
 # In[3]:
 
-
 # Standardize Data
 
 def scale_data(unscaled_X, unscaled_y):
@@ -199,7 +196,6 @@ def scale_data2(unscaled_X, unscaled_y):
 
 
 # In[4]:
-
 
 # Keras Model
 
@@ -304,7 +300,6 @@ def get_model5(from_file=False):
 
 # In[5]:
 
-
 # Learning function. Wrapper for keras model.fit( ... )
 
 def train_model(model, *args, **kwargs):
@@ -315,7 +310,6 @@ def train_model(model, *args, **kwargs):
 
 
 # In[6]:
-
 
 # Predict SR
 
@@ -382,7 +376,6 @@ def predict_sr5(model, player):
 
 # In[7]:
 
-
 # Stats
 
 def view(history):
@@ -399,7 +392,6 @@ def view(history):
 
 # In[8]:
 
-
 # Model 1
 
 X, y, scaler_X, scaler_y = scale_data(*load_data())
@@ -414,7 +406,6 @@ view(history)
 
 
 # In[9]:
-
 
 # Model 2
 
@@ -431,7 +422,6 @@ view(history2)
 
 # In[10]:
 
-
 # Model 3
 
 X, y, scaler_X3 = scale_data2(*load_data3())
@@ -446,7 +436,6 @@ view(history3)
 
 
 # In[11]:
-
 
 # Model 4
 
@@ -463,7 +452,6 @@ view(history4)
 
 # In[12]:
 
-
 # Model 5
 
 X, y, scaler_X5 = scale_data2(*load_data5())
@@ -478,7 +466,6 @@ view(history4)
 
 
 # In[ ]:
-
 
 
 with open('test_names.txt', 'r') as test:
