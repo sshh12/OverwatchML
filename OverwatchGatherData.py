@@ -1,10 +1,11 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[9]:
 
 # Imports
 
+import urllib.parse
 import requests
 import base64
 import praw
@@ -14,14 +15,14 @@ import re
 import os
 
 
-# In[2]:
+# In[10]:
 
 # Reddit Config
 
 # reddit = praw.Reddit(client_id='', client_secret='', user_agent='')
 
 
-# In[3]:
+# In[11]:
 
 # Tools
 
@@ -37,7 +38,7 @@ def get_user_json(battletag): # Battletag -> JSON
     
     battletag = battletag.replace('#', '-')
     
-    text = requests.get('https://owapi.net/api/v3/u/{}/blob'.format(battletag), headers={'User-Agent':'OWAgent'}).text
+    text = requests.get('https://owapi.net/api/v3/u/{}/blob'.format(urllib.parse.quote_plus(battletag)), headers={'User-Agent':'OWAgent'}).text
     
     if "ratelimited" in text:
         
@@ -55,7 +56,7 @@ def save_profile(battletag): # Battletag -> file.json
     
     os.makedirs('profiles', exist_ok=True)
     
-    b64_name = str(base64.b64encode(battletag.encode('utf-8')))[2:-1]
+    b64_name = str(base64.b64encode(battletag.encode('utf-8'), b'=-'))[2:-1]
     filename = b64_name + ".json"
     
     if filename not in os.listdir('profiles'):
@@ -76,7 +77,7 @@ def save_profile(battletag): # Battletag -> file.json
         
 
 
-# In[4]:
+# In[12]:
 
 # Player Object
 
@@ -117,7 +118,7 @@ class Player(object):
         return regions_with_data
 
 
-# In[5]:
+# In[13]:
 
 # Reddit Data
 
@@ -147,7 +148,7 @@ def dl_reddit(): # Gathers data from reddit
                 save_profile(battletag)
 
 
-# In[6]:
+# In[14]:
 
 # Reddit Spreedsheet Data
 # Thanks to https://www.reddit.com/r/Overwatch/comments/3qqs44/official_find_friends_by_posting_your_battletag/
@@ -167,10 +168,42 @@ def dl_spreedsheet(): # Retrieves all 1000+ battletags from the spreedsheet
         save_profile(battletag)
 
 
-# In[7]:
+# In[15]:
+
+
+ow_tracker_methods = ['CompetitiveRank', 'EliminationsPM', 'DamageDonePM', 'HealingDonePM', 'FinalBlowsPM', 'Kd',
+                      'Kad', 'Wl', 'Kg', 'SoloKills', 'ObjectiveKills', 'FinalBlows', 'DamageDone', 'Eliminations',
+                      'EnvironmentalKills', 'MultiKills', 'Deaths', 'GamesPlayed', 'TimeSpentOnFire', 'ObjectiveTime',
+                      'TimePlayed']
+
+def get_overwatchtracker_pages(method, pages=1000):
+    
+    for i in range(pages):
+        
+        yield requests.get('https://overwatchtracker.com/leaderboards/pc/global/{}?page={}&mode=1'.format(method, i + 1)).text
+
+def dl_overwatchtracker():
+        
+    for method in ow_tracker_methods:
+        
+        try:
+
+            for page in get_overwatchtracker_pages(method, 300):
+
+                for battletag in find_usernames(page):
+
+                    save_profile(battletag)
+                    
+        except Exception as e:
+            
+            print(e)
+
+
+# In[16]:
 
 # Run
 
 # dl_spreedsheet()
 # dl_reddit()
+# dl_overwatchtracker()
 
