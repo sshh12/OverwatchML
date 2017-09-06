@@ -5,8 +5,8 @@
 
 # Imports
 
-from OverwatchProcessData import get_competitive_rank, get_vector_gamestats, get_vector_herostats
-from OverwatchProcessData import get_vector_combined, general_stats, hero_stats
+from OverwatchProcessData import get_vector_combined, get_vector_gamestats, get_vector_herostats
+from OverwatchProcessData import get_competitive_rank, general_stats, hero_stats
 from OverwatchGatherData import Player, find_usernames
 
 import numpy as np
@@ -49,7 +49,11 @@ def generate_players():
     
     for filename in os.listdir('profiles'):
         
-        yield Player.from_file(os.path.join('profiles', filename))
+        player = Player.from_file(os.path.join('profiles', filename))
+        
+        if 'error' not in player.json:
+            
+            yield player
 
 def load_data(get_vector):
 
@@ -152,11 +156,19 @@ def get_model3(from_file=False):
     if not from_file:
         
         model = Sequential()
-        model.add(Dense(8, input_dim=3090, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(10, input_dim=3090, kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.5))
-        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.5))
-        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
         model.add(Dense(1, kernel_initializer='normal'))
 
         model.compile(loss='mean_squared_error', optimizer='adam')
@@ -172,12 +184,17 @@ def get_model4(from_file=False):
     if not from_file:
         
         model = Sequential()
-        model.add(Dense(8, input_dim=410, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.5))
+        model.add(Dense(12, input_dim=410, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.25))
+        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.25))
+        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.25))
+        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.25))
+        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.25))
+        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
         model.add(Dense(1, kernel_initializer='normal'))
 
         model.compile(loss='mean_squared_error', optimizer='adam')
@@ -261,21 +278,32 @@ def view(history):
     plt.legend(['Train', 'Test'], loc='upper right')
     plt.show()
     
+    plt.plot(np.sqrt(history.history['loss']) * 5000)
+    plt.plot(np.sqrt(history.history['val_loss']) * 5000)
+    plt.title('Model Accuracy')
+    plt.ylabel('Avg Accuracy')
+    plt.xlabel('epoch')
+    plt.ylim([0, 1250])
+    plt.legend(['Train', 'Test'], loc='upper right')
+    plt.show()
+    
 
 
 # In[8]:
 
-# Model 4
+# Run
 
-get_vector = lambda player, region : get_vector_herostats(player, region, stat_keys=general_hero_stats)
+#get_vector = lambda player, region : get_vector_herostats(player, region, stat_keys=general_hero_stats)
+get_vector = lambda player, region : get_vector_herostats(player, region)
 
 X, y, scaler_X = scale_data2(*load_data(get_vector))
 
-model = get_model4()
+#model = get_model4()
+model = get_model3()
 
-history = train_model(model, X, y, epochs=500, batch_size=100, validation_split=.10)
+history = train_model(model, X, y, epochs=1200, batch_size=512, validation_split=.10)
 
-model.save(os.path.join('models', 'overwatch-sr-4.h5'))
+model.save(os.path.join('models', 'overwatch-sr-3.h5'))
 
 view(history)
 
