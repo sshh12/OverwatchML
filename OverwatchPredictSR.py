@@ -15,8 +15,10 @@ import os
 np.random.seed(3)
 
 from sklearn.preprocessing import StandardScaler
-from keras.layers import Dense, Dropout
+
+from keras.layers.normalization import BatchNormalization
 from keras.models import Sequential, load_model
+from keras.layers import Dense, Dropout
 
 import matplotlib.pyplot as plt
 
@@ -27,11 +29,11 @@ import matplotlib.pyplot as plt
 
 ## Creating Custom Metrics
 
-general_general_stats = ["kpd"]
+general_general_stats = ['kpd']
 
 for stat in general_stats:
 
-    if "avg" in stat:
+    if 'avg' in stat:
 
         general_general_stats.append(stat)
         
@@ -39,7 +41,7 @@ general_hero_stats = []
 
 for stat in hero_stats:
 
-    if "avg" in stat:
+    if 'avg' in stat:
 
         general_hero_stats.append(stat)
         
@@ -62,17 +64,15 @@ def load_data(get_vector):
     for player in generate_players():
 
         rank = get_competitive_rank(player, 'us')
-        rank2 = get_competitive_rank(player, 'eu')
 
         if rank:
+            
+            playtime = player.json['us']['stats']['competitive']['game_stats']['time_played']
+            
+            if playtime > 10:
 
-            unscaled_X.append(get_vector(player, 'us'))
-            unscaled_y.append(rank)
-            
-        if rank2:
-            
-            unscaled_X.append(get_vector(player, 'eu'))
-            unscaled_y.append(rank2)
+                unscaled_X.append(get_vector(player, 'us'))
+                unscaled_y.append(rank)
 
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
     unscaled_y = np.array(unscaled_y, dtype=np.float64)
@@ -116,7 +116,7 @@ def get_model(from_file=False):
     if not from_file:
 
         model = Sequential()
-        model.add(Dense(40, input_dim=68, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(40, input_dim=len(general_stats), kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.25))
         model.add(Dense(40, kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.25))
@@ -127,7 +127,7 @@ def get_model(from_file=False):
         
     else:
         
-        model = load_model(os.path.join('models', 'overwatch-sr-1.h5'))
+        model = load_model(os.path.join('models', 'overwatch-sr-overall.h5'))
     
     return model
 
@@ -136,7 +136,7 @@ def get_model2(from_file=False):
     if not from_file:
         
         model = Sequential()
-        model.add(Dense(13, input_dim=13, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(13, input_dim=len(general_general_stats), kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.25))
         model.add(Dense(13, kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.25))
@@ -147,7 +147,7 @@ def get_model2(from_file=False):
         
     else:
         
-        model = load_model(os.path.join('models', 'overwatch-sr-2.h5'))
+        model = load_model(os.path.join('models', 'overwatch-sr-overall.h5'))
     
     return model
 
@@ -156,26 +156,36 @@ def get_model3(from_file=False):
     if not from_file:
         
         model = Sequential()
-        model.add(Dense(10, input_dim=3090, kernel_initializer='normal', activation='relu'))
+        
+        model.add(Dense(10, input_dim=len(hero_stats), kernel_initializer='normal', activation='relu'))
+        model.add(BatchNormalization())
         model.add(Dropout(0.5))
-        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        
+        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(BatchNormalization())
         model.add(Dropout(0.5))
-        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        
+        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(BatchNormalization())
         model.add(Dropout(0.5))
-        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        
+        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(BatchNormalization())
         model.add(Dropout(0.5))
-        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        
+        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(BatchNormalization())
         model.add(Dropout(0.5))
-        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        
+        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        
         model.add(Dense(1, kernel_initializer='normal'))
 
         model.compile(loss='mean_squared_error', optimizer='adam')
         
     else:
         
-        model = load_model(os.path.join('models', 'overwatch-sr-3.h5'))
+        model = load_model(os.path.join('models', 'overwatch-sr-overall.h5'))
     
     return model
 
@@ -184,7 +194,7 @@ def get_model4(from_file=False):
     if not from_file:
         
         model = Sequential()
-        model.add(Dense(12, input_dim=410, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(12, input_dim=len(general_hero_stats), kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.25))
         model.add(Dense(12, kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.25))
@@ -201,7 +211,7 @@ def get_model4(from_file=False):
         
     else:
         
-        model = load_model(os.path.join('models', 'overwatch-sr-4.h5'))
+        model = load_model(os.path.join('models', 'overwatch-sr-overall.h5'))
     
     return model
 
@@ -219,7 +229,7 @@ def get_model5(from_file=False):
         
     else:
         
-        model = load_model(os.path.join('models', 'overwatch-sr-5.h5'))
+        model = load_model(os.path.join('models', 'overwatch-sr-overall.h5'))
     
     return model
 
@@ -229,6 +239,8 @@ def get_model5(from_file=False):
 # Learning function. Wrapper for keras model.fit( ... )
 
 def train_model(model, *args, **kwargs):
+    
+    print(model.summary())
 
     history = model.fit(*args, **kwargs, shuffle=True, verbose=0)
     
@@ -293,17 +305,17 @@ def view(history):
 
 # Run
 
-#get_vector = lambda player, region : get_vector_herostats(player, region, stat_keys=general_hero_stats)
+# get_vector = lambda player, region : get_vector_herostats(player, region, stat_keys=general_hero_stats)
 get_vector = lambda player, region : get_vector_herostats(player, region)
 
 X, y, scaler_X = scale_data2(*load_data(get_vector))
 
-#model = get_model4()
+# model = get_model4()
 model = get_model3()
 
-history = train_model(model, X, y, epochs=1200, batch_size=512, validation_split=.10)
+history = train_model(model, X, y, epochs=300, batch_size=512, validation_split=.10)
 
-model.save(os.path.join('models', 'overwatch-sr-3.h5'))
+model.save(os.path.join('models', 'overall-sr.h5'))
 
 view(history)
 
@@ -320,5 +332,5 @@ with open('test_names.txt', 'r') as test:
         actual = get_competitive_rank(player, 'us')
         p = predict_sr2(model, player, scaler_X, get_vector)
         
-        print("{} is {}, predicted {}".format(battletag, actual, p))
+        print('{} is {}, predicted {}'.format(battletag, actual, p))
 

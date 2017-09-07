@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[9]:
+# In[1]:
 
 # Imports
 
@@ -15,20 +15,20 @@ import re
 import os
 
 
-# In[10]:
+# In[2]:
 
 # Reddit Config
 
 # reddit = praw.Reddit(client_id='', client_secret='', user_agent='')
 
 
-# In[11]:
+# In[3]:
 
 # Tools
 
 def find_usernames(text): # Text -> list<Battletags>
     
-    for battletag in re.findall('[^\s=,"*>+#\'\\^]{3,12}#\d{4,5}', text):
+    for battletag in re.findall('[^\s=,;"*>+#\'\\^]{3,12}#\d{4,5}', text):
         
         battletag = battletag.strip()
         
@@ -57,7 +57,7 @@ def save_profile(battletag): # Battletag -> file.json
     os.makedirs('profiles', exist_ok=True)
     
     b64_name = str(base64.b64encode(battletag.encode('utf-8'), b'=-'))[2:-1]
-    filename = b64_name + ".json"
+    filename = b64_name + '.json'
     
     if filename not in os.listdir('profiles'):
         
@@ -73,11 +73,19 @@ def save_profile(battletag): # Battletag -> file.json
             
         else:
             
+            if "404" in data:
+                
+                with open(os.path.join('profiles', filename), 'w') as profile:
+                
+                    profile.write(data)
+                    
+                print('Saved404: ' + battletag)
+            
             print(data)
         
 
 
-# In[12]:
+# In[4]:
 
 # Player Object
 
@@ -118,7 +126,7 @@ class Player(object):
         return regions_with_data
 
 
-# In[13]:
+# In[5]:
 
 # Reddit Data
 
@@ -148,7 +156,7 @@ def dl_reddit(): # Gathers data from reddit
                 save_profile(battletag)
 
 
-# In[14]:
+# In[6]:
 
 # Reddit Spreedsheet Data
 # Thanks to https://www.reddit.com/r/Overwatch/comments/3qqs44/official_find_friends_by_posting_your_battletag/
@@ -168,10 +176,10 @@ def dl_spreedsheet(): # Retrieves all 1000+ battletags from the spreedsheet
         save_profile(battletag)
 
 
-# In[15]:
+# In[7]:
 
 
-ow_tracker_methods = ['CompetitiveRank', 'EliminationsPM', 'DamageDonePM', 'HealingDonePM', 'FinalBlowsPM', 'Kd',
+ow_tracker_methods = ['MostEliminations', 'MostDamageDone', 'Level', 'CompetitiveRank', 'EliminationsPM', 'DamageDonePM', 'HealingDonePM', 'FinalBlowsPM', 'Kd',
                       'Kad', 'Wl', 'Kg', 'SoloKills', 'ObjectiveKills', 'FinalBlows', 'DamageDone', 'Eliminations',
                       'EnvironmentalKills', 'MultiKills', 'Deaths', 'GamesPlayed', 'TimeSpentOnFire', 'ObjectiveTime',
                       'TimePlayed']
@@ -199,7 +207,7 @@ def dl_overwatchtracker():
             print(e)
 
 
-# In[16]:
+# In[8]:
 
 # Run
 

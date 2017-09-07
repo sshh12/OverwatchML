@@ -40,7 +40,7 @@ def get_vector_gamestats(player, region, gametype="competitive", stat_keys=None)
             
         for key in stat_keys:
                 
-            if "overwatchguid" not in key:
+            if 'overwatchguid' not in key:
                     
                 if key not in stats:
                         
@@ -60,7 +60,7 @@ def get_vector_gamestats(player, region, gametype="competitive", stat_keys=None)
 # In[4]:
 
 
-def get_vector_herostats(player, region, gametype="competitive", stat_keys=None):
+def get_vector_herostats(player, region, gametype='competitive', stat_keys=None):
     
     if not stat_keys:
         
@@ -68,7 +68,7 @@ def get_vector_herostats(player, region, gametype="competitive", stat_keys=None)
         
     try:
 
-        stats = player.json[region]['heroes']["stats"][gametype]
+        stats = player.json[region]['heroes']['stats'][gametype]
             
         vector = []
             
@@ -94,7 +94,7 @@ def get_vector_herostats(player, region, gametype="competitive", stat_keys=None)
 # In[5]:
 
 
-def get_vector_combined(player, region, gametype="competitive", stat_keys_general=None, stat_keys_heros=None):
+def get_vector_combined(player, region, gametype='competitive', stat_keys_general=None, stat_keys_heros=None):
     
     if not stat_keys_general:
         
