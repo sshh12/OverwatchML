@@ -15,9 +15,11 @@ import os
 np.random.seed(3)
 
 from sklearn.preprocessing import StandardScaler
+from sklearn.externals import joblib
 
 from keras.layers.normalization import BatchNormalization
 from keras.models import Sequential, load_model
+from keras.callbacks import EarlyStopping
 from keras.layers import Dense, Dropout
 
 import matplotlib.pyplot as plt
@@ -157,28 +159,36 @@ def get_model3(from_file=False):
         
         model = Sequential()
         
-        model.add(Dense(10, input_dim=len(hero_stats), kernel_initializer='normal', activation='relu'))
+        model.add(Dense(14, input_dim=len(hero_stats), kernel_initializer='normal', activation='relu'))
         model.add(BatchNormalization())
         model.add(Dropout(0.5))
         
-        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
         model.add(BatchNormalization())
         model.add(Dropout(0.5))
         
-        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
         model.add(BatchNormalization())
         model.add(Dropout(0.5))
         
-        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
         model.add(BatchNormalization())
         model.add(Dropout(0.5))
         
-        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
         model.add(BatchNormalization())
         model.add(Dropout(0.5))
         
-        model.add(Dense(8, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        model.add(BatchNormalization())
+        model.add(Dropout(0.5))
         
+        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        model.add(BatchNormalization())
+        model.add(Dropout(0.5))
+        
+        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+        model.add(BatchNormalization())
         model.add(Dense(1, kernel_initializer='normal'))
 
         model.compile(loss='mean_squared_error', optimizer='adam')
@@ -240,9 +250,9 @@ def get_model5(from_file=False):
 
 def train_model(model, *args, **kwargs):
     
-    print(model.summary())
+    # print(model.summary())
 
-    history = model.fit(*args, **kwargs, shuffle=True, verbose=0)
+    history = model.fit(*args, **kwargs, shuffle=True, validation_split=.10, verbose=0, callbacks=[EarlyStopping(patience=25)])
     
     return history
 
@@ -301,7 +311,7 @@ def view(history):
     
 
 
-# In[8]:
+# In[ ]:
 
 # Run
 
@@ -313,9 +323,10 @@ X, y, scaler_X = scale_data2(*load_data(get_vector))
 # model = get_model4()
 model = get_model3()
 
-history = train_model(model, X, y, epochs=300, batch_size=512, validation_split=.10)
+history = train_model(model, X, y, epochs=1000, batch_size=512)
 
 model.save(os.path.join('models', 'overall-sr.h5'))
+joblib.dump(scaler_X, os.path.join('models', 'overall-sr.pkl'))
 
 view(history)
 
