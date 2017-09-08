@@ -15,7 +15,11 @@ import os
 np.random.seed(3)
 
 from sklearn.preprocessing import StandardScaler
+from sklearn.externals import joblib
+
+from keras.layers.normalization import BatchNormalization
 from keras.models import Sequential, load_model
+from keras.callbacks import EarlyStopping
 from keras.layers import Dense, Dropout
 
 import matplotlib.pyplot as plt
@@ -25,15 +29,19 @@ import matplotlib.pyplot as plt
 
 # Loading Data
 
-HERO = 'mercy'
-
-specific_stats = []
+specific_stats = {}
 
 for stat in hero_stats:
     
-    if stat.startswith(HERO):
+    hero, _, _ = stat.split(" ")
+    
+    if hero in specific_stats:
         
-        specific_stats.append(stat)
+        specific_stats[hero].append(stat)
+    
+    else:
+        
+        specific_stats[hero] = [stat]
 
 def generate_players():
     
@@ -45,7 +53,7 @@ def generate_players():
             
             yield player
 
-def load_data():
+def load_data(hero):
 
     unscaled_X, unscaled_y = [], []
 
@@ -57,11 +65,11 @@ def load_data():
             
             try:
                 
-                time_played = player.json['us']['heroes']['stats']['competitive'][HERO]['general_stats']['time_played']
+                time_played = player.json['us']['heroes']['stats']['competitive'][hero]['general_stats']['time_played']
                 
-                if time_played > 0:
+                if time_played >= .5:
                 
-                    unscaled_X.append(get_vector_herostats(player, 'us', stat_keys=specific_stats))
+                    unscaled_X.append(get_vector_herostats(player, 'us', stat_keys=specific_stats[hero]))
                     unscaled_y.append(rank)
                 
             except:
@@ -72,12 +80,11 @@ def load_data():
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
     unscaled_y = np.array(unscaled_y, dtype=np.float64)
     
-    print(unscaled_X.shape)
-    print(unscaled_y.shape)
+    print(unscaled_X.shape, unscaled_y.shape)
     
     return unscaled_X, unscaled_y
 
-len(specific_stats)
+len(specific_stats), len(specific_stats['mercy'])
 
 
 # In[3]:
@@ -98,22 +105,32 @@ def scale_data(unscaled_X, unscaled_y):
 
 # Model
 
-def get_model():
+def get_model(hero):
     
     model = Sequential()
-    model.add(Dense(20, input_dim=len(specific_stats), kernel_initializer='normal', activation='relu'))
+    
+    model.add(Dense(12, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
     model.add(Dropout(0.5))
-    model.add(Dense(20, kernel_initializer='normal', activation='relu'))
+    
+    model.add(Dense(12, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
     model.add(Dropout(0.5))
-    model.add(Dense(20, kernel_initializer='normal', activation='relu'))
+    
+    model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
     model.add(Dropout(0.5))
-    model.add(Dense(20, kernel_initializer='normal', activation='relu'))
+    
+    model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
     model.add(Dropout(0.5))
-    model.add(Dense(20, kernel_initializer='normal', activation='relu'))
+    
+    model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
     model.add(Dropout(0.5))
-    model.add(Dense(20, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(20, kernel_initializer='normal', activation='relu'))
+    
+    model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
     model.add(Dense(1, kernel_initializer='normal'))
     
     model.compile(loss='mean_squared_error', optimizer='adam')
@@ -126,21 +143,42 @@ def get_model():
 # Train wrapper
 
 def train_model(model, *args, **kwargs):
-    
-    print(model.summary())
 
-    history = model.fit(*args, **kwargs, shuffle=True, verbose=0)
+    history = model.fit(*args, **kwargs, shuffle=True, validation_split=.10, verbose=0, callbacks=[EarlyStopping(patience=25)])
     
     return history
+
+def get_hero_model(hero, from_file=False):
+    
+    if from_file:
+        
+        model = load_model(os.path.join('models', '{}-sr.h5'.format(hero)))
+        
+        scaler_X = joblib.load(os.path.join('models', '{}-sr.pkl'.format(hero)))
+        
+        return None, model, scaler_X
+    
+    print('TRAINING ' + hero)
+    
+    X, y, scaler_X = scale_data(*load_data(hero))
+
+    model = get_model(hero)
+
+    history = train_model(model, X, y, epochs=1000, batch_size=512)
+
+    model.save(os.path.join('models', '{}-sr.h5'.format(hero)))
+    joblib.dump(scaler_X, os.path.join('models', '{}-sr.pkl'.format(hero)))
+    
+    return history, model, scaler_X
 
 
 # In[6]:
 
 # Predict
 
-def predict_sr(model, player, scaler_for_X):
+def predict_sr(model, player, scaler_for_X, hero):
     
-    stats_vector = np.array([get_vector_herostats(player, 'us', stat_keys=specific_stats)])
+    stats_vector = np.array([get_vector_herostats(player, 'us', stat_keys=specific_stats[hero])])
     
     X = scaler_for_X.transform(stats_vector)
 
@@ -171,7 +209,7 @@ def view(history):
     plt.ylabel('Avg Accuracy')
     plt.xlabel('epoch')
     plt.ylim([0, 1250])
-    plt.legend(['Train', 'Test'], loc='upper right')
+    plt.legend(['Train', 'Test'], loc='upper left')
     plt.show()
 
 
@@ -179,19 +217,57 @@ def view(history):
 
 # Run
 
-X, y, scaler_X = scale_data(*load_data())
+for hero in specific_stats:
+    
+    history, model, _ = get_hero_model(hero)
+    
+    plt.plot(np.sqrt(history.history['val_loss']) * 5000)
+    
+plt.title('Model Accuracy')
+plt.ylabel('Avg Accuracy')
+plt.xlabel('epoch')
+plt.ylim([0, 1300])
+plt.legend(list(specific_stats), loc='lower left')
+plt.show()
 
-model = get_model()
 
-history = train_model(model, X, y, epochs=1000, batch_size=1024, validation_split=.10)
+# In[9]:
 
-model.save(os.path.join('models', '{}-sr.h5'.format(HERO)))
+# Load models from disk
 
-view(history)
+models = {}
+
+for hero in specific_stats:
+    
+    models[hero] = get_hero_model(hero, from_file=True)
+
+
+# In[12]:
+
+# Predict using all viable models
+
+def predict_all(player):
+    
+    sr_predictions = []
+    time_played = []
+
+    for hero in specific_stats:
+        
+        player_hero_stats = player.json['us']['heroes']['stats']['competitive']
+
+        if hero in player_hero_stats and player_hero_stats[hero]['general_stats']['time_played'] >= .5:
+
+            _, model, scaler = models[hero]
+                
+            sr_predictions.append(predict_sr(model, player, scaler, hero))
+            time_played.append(player_hero_stats[hero]['general_stats']['time_played'])
+                
+    return int(np.average(sr_predictions, weights=time_played))
 
 
 # In[ ]:
 
+# Test
 
 with open('test_names.txt', 'r') as test:
 
@@ -200,7 +276,7 @@ with open('test_names.txt', 'r') as test:
         player = Player.from_web_battletag(battletag)
         
         actual = get_competitive_rank(player, 'us')
-        p = predict_sr(model, player, scaler_X)
+        p = predict_all(player)
         
         print("{} is {}, predicted {}".format(battletag, actual, p))
 
