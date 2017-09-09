@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[13]:
 
 # Imports
 
@@ -25,7 +25,7 @@ from keras.layers import Dense, Dropout
 import matplotlib.pyplot as plt
 
 
-# In[2]:
+# In[14]:
 
 # Loading Data
 
@@ -87,7 +87,7 @@ def load_data(hero):
 len(specific_stats), len(specific_stats['mercy'])
 
 
-# In[3]:
+# In[15]:
 
 # Scale
 
@@ -101,7 +101,7 @@ def scale_data(unscaled_X, unscaled_y):
     return X, y, scaler_X
 
 
-# In[4]:
+# In[16]:
 
 # Model
 
@@ -109,28 +109,24 @@ def get_model(hero):
     
     model = Sequential()
     
-    model.add(Dense(12, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='relu'))
+    model.add(Dense(18, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(12, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(18, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(18, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(18, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(10, kernel_initializer='normal', activation='relu'))
-    model.add(BatchNormalization())
-    model.add(Dropout(0.5))
-    
-    model.add(Dense(10, kernel_initializer='normal', activation='relu'))
-    model.add(BatchNormalization())
+    model.add(Dense(18, kernel_initializer='normal', activation='relu'))
+
     model.add(Dense(1, kernel_initializer='normal'))
     
     model.compile(loss='mean_squared_error', optimizer='adam')
@@ -138,7 +134,7 @@ def get_model(hero):
     return model
 
 
-# In[5]:
+# In[17]:
 
 # Train wrapper
 
@@ -172,7 +168,7 @@ def get_hero_model(hero, from_file=False):
     return history, model, scaler_X
 
 
-# In[6]:
+# In[18]:
 
 # Predict
 
@@ -189,7 +185,7 @@ def predict_sr(model, player, scaler_for_X, hero):
     return int(sr)
 
 
-# In[7]:
+# In[19]:
 
 # View
 
@@ -213,7 +209,7 @@ def view(history):
     plt.show()
 
 
-# In[8]:
+# In[ ]:
 
 # Run
 
@@ -231,7 +227,7 @@ plt.legend(list(specific_stats), loc='lower left')
 plt.show()
 
 
-# In[9]:
+# In[ ]:
 
 # Load models from disk
 
@@ -242,7 +238,7 @@ for hero in specific_stats:
     models[hero] = get_hero_model(hero, from_file=True)
 
 
-# In[12]:
+# In[ ]:
 
 # Predict using all viable models
 

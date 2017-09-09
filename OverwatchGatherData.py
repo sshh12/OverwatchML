@@ -7,6 +7,7 @@
 
 import urllib.parse
 import requests
+import random
 import base64
 import praw
 import time
@@ -184,11 +185,17 @@ ow_tracker_methods = ['MostEliminations', 'MostDamageDone', 'Level', 'Competitiv
                       'EnvironmentalKills', 'MultiKills', 'Deaths', 'GamesPlayed', 'TimeSpentOnFire', 'ObjectiveTime',
                       'TimePlayed']
 
-def get_overwatchtracker_pages(method, pages=1000):
+def get_overwatchtracker_pages(method, pages=1000, random=False):
     
     for i in range(pages):
         
-        yield requests.get('https://overwatchtracker.com/leaderboards/pc/global/{}?page={}&mode=1'.format(method, i + 1)).text
+        page_num = i + 1
+        
+        if random:
+            
+            page_num = random.randrange(1, 1400)
+        
+        yield requests.get('https://overwatchtracker.com/leaderboards/pc/global/{}?page={}&mode=1'.format(method, page_num)).text
 
 def dl_overwatchtracker():
         
@@ -196,7 +203,7 @@ def dl_overwatchtracker():
         
         try:
 
-            for page in get_overwatchtracker_pages(method, 300):
+            for page in get_overwatchtracker_pages(method, pages=300, random=True):
 
                 for battletag in find_usernames(page):
 

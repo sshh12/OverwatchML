@@ -113,135 +113,100 @@ def scale_data2(unscaled_X, unscaled_y):
 
 # Keras Model
 
-def get_model(from_file=False):
-    
-    if not from_file:
+def get_model():
 
-        model = Sequential()
-        model.add(Dense(40, input_dim=len(general_stats), kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.25))
-        model.add(Dense(40, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.25))
-        model.add(Dense(40, kernel_initializer='normal', activation='relu'))
-        model.add(Dense(1, kernel_initializer='normal'))
+    model = Sequential()
+    model.add(Dense(40, input_dim=len(general_stats), kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(40, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(40, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(1, kernel_initializer='normal'))
 
-        model.compile(loss='mean_squared_error', optimizer='adam') # MSE loss b/c regression
-        
-    else:
-        
-        model = load_model(os.path.join('models', 'overwatch-sr-overall.h5'))
+    model.compile(loss='mean_squared_error', optimizer='adam') # MSE loss b/c regression
     
     return model
 
-def get_model2(from_file=False):
-    
-    if not from_file:
+def get_model2():
         
-        model = Sequential()
-        model.add(Dense(13, input_dim=len(general_general_stats), kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.25))
-        model.add(Dense(13, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.25))
-        model.add(Dense(13, kernel_initializer='normal', activation='relu'))
-        model.add(Dense(1, kernel_initializer='normal'))
+    model = Sequential()
+    model.add(Dense(13, input_dim=len(general_general_stats), kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(13, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(13, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(1, kernel_initializer='normal'))
 
-        model.compile(loss='mean_squared_error', optimizer='adam')
-        
-    else:
-        
-        model = load_model(os.path.join('models', 'overwatch-sr-overall.h5'))
+    model.compile(loss='mean_squared_error', optimizer='adam')
     
     return model
 
-def get_model3(from_file=False):
+def get_model3():
+        
+    model = Sequential()
+        
+    model.add(Dense(14, input_dim=len(hero_stats), kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+        
+    model.add(Dense(14, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+        
+    model.add(Dense(14, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+        
+    model.add(Dense(14, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
     
-    if not from_file:
-        
-        model = Sequential()
-        
-        model.add(Dense(14, input_dim=len(hero_stats), kernel_initializer='normal', activation='relu'))
-        model.add(BatchNormalization())
-        model.add(Dropout(0.5))
-        
-        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
-        model.add(BatchNormalization())
-        model.add(Dropout(0.5))
-        
-        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
-        model.add(BatchNormalization())
-        model.add(Dropout(0.5))
-        
-        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
-        model.add(BatchNormalization())
-        model.add(Dropout(0.5))
-        
-        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
-        model.add(BatchNormalization())
-        model.add(Dropout(0.5))
-        
-        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
-        model.add(BatchNormalization())
-        model.add(Dropout(0.5))
-        
-        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
-        model.add(BatchNormalization())
-        model.add(Dropout(0.5))
-        
-        model.add(Dense(10, kernel_initializer='normal', activation='relu'))
-        model.add(BatchNormalization())
-        model.add(Dense(1, kernel_initializer='normal'))
+    model.add(Dense(14, kernel_initializer='normal', activation='relu'))
+    
+    model.add(Dense(1))
 
-        model.compile(loss='mean_squared_error', optimizer='adam')
-        
-    else:
-        
-        model = load_model(os.path.join('models', 'overwatch-sr-overall.h5'))
+    model.compile(loss='mean_squared_error', optimizer='adam')
     
     return model
 
-def get_model4(from_file=False):
-    
-    if not from_file:
+def get_model4():
         
-        model = Sequential()
-        model.add(Dense(12, input_dim=len(general_hero_stats), kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.25))
-        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.25))
-        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.25))
-        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.25))
-        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.25))
-        model.add(Dense(12, kernel_initializer='normal', activation='relu'))
-        model.add(Dense(1, kernel_initializer='normal'))
+    model = Sequential()
+    model.add(Dense(12, input_dim=len(general_hero_stats), kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(12, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(12, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(12, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(12, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(12, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(1, kernel_initializer='normal'))
 
-        model.compile(loss='mean_squared_error', optimizer='adam')
-        
-    else:
-        
-        model = load_model(os.path.join('models', 'overwatch-sr-overall.h5'))
+    model.compile(loss='mean_squared_error', optimizer='adam')
     
     return model
 
-def get_model5(from_file=False):
-    
-    if not from_file:
+def get_model5():
         
-        model = Sequential()
-        model.add(Dense(20, input_dim=3158, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(20, kernel_initializer='normal', activation='relu'))
-        model.add(Dense(1, kernel_initializer='normal'))
+    model = Sequential()
+    model.add(Dense(20, input_dim=3158, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(20, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(1, kernel_initializer='normal'))
 
-        model.compile(loss='mean_squared_error', optimizer='adam')
-        
-    else:
-        
-        model = load_model(os.path.join('models', 'overwatch-sr-overall.h5'))
+    model.compile(loss='mean_squared_error', optimizer='adam')
     
     return model
+
+def get_model_from_file():
+    
+    model = load_model(os.path.join('models', 'overall-sr.h5'))
+    scalar = joblib.load(os.path.join('models', 'overall-sr.pkl'))
+    
+    return model, scalar
 
 
 # In[5]:
@@ -252,7 +217,7 @@ def train_model(model, *args, **kwargs):
     
     # print(model.summary())
 
-    history = model.fit(*args, **kwargs, shuffle=True, validation_split=.10, verbose=0, callbacks=[EarlyStopping(patience=25)])
+    history = model.fit(*args, **kwargs, shuffle=True, validation_split=.10, verbose=0, callbacks=[EarlyStopping(patience=30)])
     
     return history
 
@@ -311,7 +276,7 @@ def view(history):
     
 
 
-# In[ ]:
+# In[8]:
 
 # Run
 
@@ -331,8 +296,18 @@ joblib.dump(scaler_X, os.path.join('models', 'overall-sr.pkl'))
 view(history)
 
 
+# In[9]:
+
+# Load from disk
+
+get_vector = lambda player, region : get_vector_herostats(player, region)
+
+model, scaler_X = get_model_from_file()
+
+
 # In[ ]:
 
+# Test
 
 with open('test_names.txt', 'r') as test:
 
