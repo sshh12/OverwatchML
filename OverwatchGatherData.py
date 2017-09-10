@@ -39,7 +39,8 @@ def get_user_json(battletag): # Battletag -> JSON
     
     battletag = battletag.replace('#', '-')
     
-    text = requests.get('https://owapi.net/api/v3/u/{}/blob'.format(urllib.parse.quote_plus(battletag)), headers={'User-Agent':'OWAgent'}).text
+    text = requests.get('https://owapi.net/api/v3/u/{}/blob'.format(urllib.parse.quote_plus(battletag)), 
+                            headers={'User-Agent':'OWAgent'}).text
     
     if "ratelimited" in text:
         
@@ -131,10 +132,18 @@ class Player(object):
 
 # Reddit Data
 
-subreddits = ['Overwatch', 'CompetitiveOverwatch', 'OverwatchUniversity', 'Overwatch_Memes', 'Overwatched', 'OverwatchCustomGames',
-              'OverwatchCirclejerk', 'wholesomeoverwatch','ImaginaryOverwatch', 'Overwatch_comics', 'OverwatchHeroConcepts',
-              'OverwatchLore', 'OverwatchLeague', 'AnaMains', 'HanaSong', 'luciomains', 'LucioRollouts', 'McCreeMains', 
-              'MeiMains', 'SymmetraMains', 'WidowmakerMains', 'ZaryaMains', 'ZenyattaMains', 'Hearthstone']
+subreddits = ['Overwatch', 'CompetitiveOverwatch', 
+              'OverwatchUniversity', 'Overwatch_Memes', 
+              'Overwatched', 'OverwatchCustomGames',
+              'OverwatchCirclejerk', 'wholesomeoverwatch',
+              'ImaginaryOverwatch', 'Overwatch_comics', 
+              'OverwatchHeroConcepts', 'OverwatchLore', 
+              'OverwatchLeague', 'AnaMains', 
+              'HanaSong', 'luciomains', 
+              'LucioRollouts', 'McCreeMains', 
+              'MeiMains', 'SymmetraMains', 
+              'WidowmakerMains', 'ZaryaMains', 
+              'ZenyattaMains', 'Hearthstone']
 
 def generate_reddit_text(subreddit): # Subreddit -> the content of as many comments possible
     
@@ -180,10 +189,17 @@ def dl_spreedsheet(): # Retrieves all 1000+ battletags from the spreedsheet
 # In[7]:
 
 
-ow_tracker_methods = ['MostEliminations', 'MostDamageDone', 'Level', 'CompetitiveRank', 'EliminationsPM', 'DamageDonePM', 'HealingDonePM', 'FinalBlowsPM', 'Kd',
-                      'Kad', 'Wl', 'Kg', 'SoloKills', 'ObjectiveKills', 'FinalBlows', 'DamageDone', 'Eliminations',
-                      'EnvironmentalKills', 'MultiKills', 'Deaths', 'GamesPlayed', 'TimeSpentOnFire', 'ObjectiveTime',
-                      'TimePlayed']
+ow_tracker_methods = ['MostEliminations', 'MostDamageDone', 
+                      'Level', 'CompetitiveRank', 
+                      'EliminationsPM', 'DamageDonePM', 
+                      'HealingDonePM', 'FinalBlowsPM', 
+                      'Kd','Kad', 'Wl', 'Kg', 
+                      'SoloKills', 'ObjectiveKills', 
+                      'FinalBlows', 'DamageDone', 
+                      'Eliminations', 'EnvironmentalKills', 
+                      'MultiKills', 'Deaths', 
+                      'GamesPlayed', 'TimeSpentOnFire', 
+                      'ObjectiveTime', 'TimePlayed']
 
 def get_overwatchtracker_pages(method, pages=1000, random=False):
     

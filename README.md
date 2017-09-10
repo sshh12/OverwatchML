@@ -6,7 +6,7 @@ The goal of this project is to use player statistics ingame to predict their SR 
 
 ##### Gathering Data
 
-A simple web scraper was used to extract battletags from reddit. The battletags
+A simple web scraper was used to extract battletags from reddit and [overwatchtracker](https://overwatchtracker.com/leaderboards/pc/global). The battletags
 were then sent through [OWAPI](https://github.com/SunDwarf/OWAPI/blob/master/api.md) to retrieve the stats
 in an easy to work with json.
 
