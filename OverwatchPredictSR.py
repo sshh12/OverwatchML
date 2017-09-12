@@ -12,7 +12,7 @@ from OverwatchGatherData import Player, find_usernames
 import numpy as np
 import os
 
-np.random.seed(3)
+np.random.seed(3333)
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.externals import joblib
@@ -71,7 +71,7 @@ def load_data(get_vector):
             
             playtime = player.json['us']['stats']['competitive']['game_stats']['time_played']
             
-            if playtime > 10:
+            if playtime > 20:
 
                 unscaled_X.append(get_vector(player, 'us'))
                 unscaled_y.append(rank)
@@ -145,23 +145,27 @@ def get_model3():
         
     model = Sequential()
         
-    model.add(Dense(14, input_dim=len(hero_stats), kernel_initializer='normal', activation='relu'))
+    model.add(Dense(24, input_dim=len(hero_stats), kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
         
-    model.add(Dense(14, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
         
-    model.add(Dense(14, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
         
-    model.add(Dense(14, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(14, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+    
+    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
     
     model.add(Dense(1))
 
@@ -278,17 +282,20 @@ def view(history):
 
 # In[8]:
 
-# Run
+# Run (Load)
 
-# get_vector = lambda player, region : get_vector_herostats(player, region, stat_keys=general_hero_stats)
 get_vector = lambda player, region : get_vector_herostats(player, region)
 
 X, y, scaler_X = scale_data2(*load_data(get_vector))
 
-# model = get_model4()
+
+# In[9]:
+
+# Run (Train)
+
 model = get_model3()
 
-history = train_model(model, X, y, epochs=1000, batch_size=512)
+history = train_model(model, X, y, epochs=1500, batch_size=256)
 
 model.save(os.path.join('models', 'overall-sr.h5'))
 joblib.dump(scaler_X, os.path.join('models', 'overall-sr.pkl'))
@@ -296,9 +303,9 @@ joblib.dump(scaler_X, os.path.join('models', 'overall-sr.pkl'))
 view(history)
 
 
-# In[9]:
+# In[10]:
 
-# Load from disk
+# Run (Load from disk)
 
 get_vector = lambda player, region : get_vector_herostats(player, region)
 
@@ -307,7 +314,7 @@ model, scaler_X = get_model_from_file()
 
 # In[ ]:
 
-# Test
+# Run (Test)
 
 with open('test_names.txt', 'r') as test:
 
