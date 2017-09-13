@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[13]:
+# In[1]:
 
 # Imports
 
@@ -25,7 +25,7 @@ from keras.layers import Dense, Dropout
 import matplotlib.pyplot as plt
 
 
-# In[14]:
+# In[2]:
 
 # Loading Data
 
@@ -87,7 +87,7 @@ def load_data(hero):
 len(specific_stats), len(specific_stats['mercy'])
 
 
-# In[15]:
+# In[3]:
 
 # Scale
 
@@ -101,7 +101,7 @@ def scale_data(unscaled_X, unscaled_y):
     return X, y, scaler_X
 
 
-# In[16]:
+# In[4]:
 
 # Model
 
@@ -109,23 +109,27 @@ def get_model(hero):
     
     model = Sequential()
     
-    model.add(Dense(18, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='relu'))
+    model.add(Dense(24, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(18, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(18, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(18, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(18, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+    
+    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
 
     model.add(Dense(1, kernel_initializer='normal'))
     
@@ -134,7 +138,7 @@ def get_model(hero):
     return model
 
 
-# In[17]:
+# In[5]:
 
 # Train wrapper
 
@@ -160,7 +164,7 @@ def get_hero_model(hero, from_file=False):
 
     model = get_model(hero)
 
-    history = train_model(model, X, y, epochs=1000, batch_size=512)
+    history = train_model(model, X, y, epochs=1500, batch_size=256)
 
     model.save(os.path.join('models', '{}-sr.h5'.format(hero)))
     joblib.dump(scaler_X, os.path.join('models', '{}-sr.pkl'.format(hero)))
@@ -168,7 +172,7 @@ def get_hero_model(hero, from_file=False):
     return history, model, scaler_X
 
 
-# In[18]:
+# In[6]:
 
 # Predict
 
@@ -185,7 +189,7 @@ def predict_sr(model, player, scaler_for_X, hero):
     return int(sr)
 
 
-# In[19]:
+# In[7]:
 
 # View
 
@@ -209,7 +213,7 @@ def view(history):
     plt.show()
 
 
-# In[ ]:
+# In[8]:
 
 # Run
 
@@ -227,7 +231,7 @@ plt.legend(list(specific_stats), loc='lower left')
 plt.show()
 
 
-# In[ ]:
+# In[9]:
 
 # Load models from disk
 
@@ -238,7 +242,7 @@ for hero in specific_stats:
     models[hero] = get_hero_model(hero, from_file=True)
 
 
-# In[ ]:
+# In[10]:
 
 # Predict using all viable models
 
@@ -251,7 +255,7 @@ def predict_all(player):
         
         player_hero_stats = player.json['us']['heroes']['stats']['competitive']
 
-        if hero in player_hero_stats and player_hero_stats[hero]['general_stats']['time_played'] >= .5:
+        if hero in player_hero_stats and player_hero_stats[hero]['general_stats']['time_played'] >= .2:
 
             _, model, scaler = models[hero]
                 
