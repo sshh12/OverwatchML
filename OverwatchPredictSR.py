@@ -12,7 +12,7 @@ from OverwatchGatherData import Player, find_usernames
 import numpy as np
 import os
 
-np.random.seed(3333)
+np.random.seed(12321)
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.externals import joblib
@@ -71,7 +71,7 @@ def load_data(get_vector):
             
             playtime = player.json['us']['stats']['competitive']['game_stats']['time_played']
             
-            if playtime > 20:
+            if playtime > 18:
 
                 unscaled_X.append(get_vector(player, 'us'))
                 unscaled_y.append(rank)
@@ -145,27 +145,27 @@ def get_model3():
         
     model = Sequential()
         
-    model.add(Dense(24, input_dim=len(hero_stats), kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, input_dim=len(hero_stats), kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
         
-    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
         
-    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
         
-    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     
     model.add(Dense(1))
 
@@ -286,7 +286,9 @@ def view(history):
 
 get_vector = lambda player, region : get_vector_herostats(player, region)
 
-X, y, scaler_X = scale_data2(*load_data(get_vector))
+data = load_data(get_vector)
+
+X, y, scaler_X = scale_data2(*data)
 
 
 # In[9]:
