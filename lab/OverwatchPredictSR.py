@@ -53,9 +53,9 @@ for stat in hero_stats:
         
 def generate_players():
     
-    for filename in os.listdir('profiles'):
+    for filename in os.listdir(os.path.join('..', 'profiles')):
         
-        player = Player.from_file(os.path.join('profiles', filename))
+        player = Player.from_file(os.path.join('..', 'profiles', filename))
         
         if 'error' not in player.json:
             
@@ -241,8 +241,8 @@ def get_model5():
 
 def get_model_from_file():
     
-    model = load_model(os.path.join('models', 'overall-sr.h5'))
-    scalar = joblib.load(os.path.join('models', 'overall-sr.pkl'))
+    model = load_model(os.path.join('..', 'models', 'overall-sr.h5'))
+    scalar = joblib.load(os.path.join('..', 'models', 'overall-sr.pkl'))
     
     return model, scalar
 
@@ -338,8 +338,8 @@ if __name__ == "__main__":
 
     history = train_model(model, X, y, epochs=1000, batch_size=32)
     
-    model.save(os.path.join('models', 'overall-sr.h5'))
-    joblib.dump(scaler_X, os.path.join('models', 'overall-sr.pkl'))
+    model.save(os.path.join('..', 'models', 'overall-sr.h5'))
+    joblib.dump(scaler_X, os.path.join('..', 'models', 'overall-sr.pkl'))
 
     view(history)
 

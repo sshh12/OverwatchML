@@ -56,18 +56,18 @@ def save_profile(battletag): # Battletag -> file.json
     
     print('Saving: ' + battletag)
     
-    os.makedirs('profiles', exist_ok=True)
+    os.makedirs(os.path.join('..', 'profiles'), exist_ok=True)
     
     b64_name = str(base64.b64encode(battletag.encode('utf-8'), b'=-'))[2:-1]
     filename = b64_name + '.json'
     
-    if filename not in os.listdir('profiles'):
+    if filename not in os.listdir(os.path.join('..', 'profiles')):
         
         data = get_user_json(battletag)
         
         if "error" not in data:
             
-            with open(os.path.join('profiles', filename), 'w') as profile:
+            with open(os.path.join('..', 'profiles', filename), 'w') as profile:
                 
                 profile.write(data)
                 
@@ -77,7 +77,7 @@ def save_profile(battletag): # Battletag -> file.json
             
             if "404" in data:
                 
-                with open(os.path.join('profiles', filename), 'w') as profile:
+                with open(os.path.join('..', 'profiles', filename), 'w') as profile:
                 
                     profile.write(data)
                     

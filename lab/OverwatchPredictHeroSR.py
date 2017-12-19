@@ -45,9 +45,9 @@ for stat in hero_stats:
 
 def generate_players():
     
-    for filename in os.listdir('profiles'):
+    for filename in os.listdir(os.path.join('..', 'profiles')):
         
-        player = Player.from_file(os.path.join('profiles', filename))
+        player = Player.from_file(os.path.join('..', 'profiles', filename))
         
         if 'error' not in player.json:
             
@@ -152,9 +152,9 @@ def get_hero_model(hero, from_file=False):
     
     if from_file:
         
-        model = load_model(os.path.join('models', '{}-sr.h5'.format(hero)))
+        model = load_model(os.path.join('..', 'models', '{}-sr.h5'.format(hero)))
         
-        scaler_X = joblib.load(os.path.join('models', '{}-sr.pkl'.format(hero)))
+        scaler_X = joblib.load(os.path.join('..', 'models', '{}-sr.pkl'.format(hero)))
         
         return None, model, scaler_X
     
@@ -166,8 +166,8 @@ def get_hero_model(hero, from_file=False):
 
     history = train_model(model, X, y, epochs=1500, batch_size=256)
 
-    model.save(os.path.join('models', '{}-sr.h5'.format(hero)))
-    joblib.dump(scaler_X, os.path.join('models', '{}-sr.pkl'.format(hero)))
+    model.save(os.path.join('..', 'models', '{}-sr.h5'.format(hero)))
+    joblib.dump(scaler_X, os.path.join('..', 'models', '{}-sr.pkl'.format(hero)))
     
     return history, model, scaler_X
 
