@@ -1,14 +1,16 @@
 # OverwatchML
 
-## Predicting SR
+### Predicting SR
 
 The goal of this project is to use player statistics ingame to predict their SR (Skill rating).
 
-### App
+## App
+
+Applying the Model
 
 TODO
 
-### Lab
+## Lab
 
 Creating/Training Models
 
