@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[8]:
 
 # Imports
 
@@ -25,7 +25,7 @@ from keras.layers import Dense, Dropout
 import matplotlib.pyplot as plt
 
 
-# In[2]:
+# In[9]:
 
 # Loading Data
 
@@ -87,7 +87,7 @@ def load_data(hero):
 len(specific_stats), len(specific_stats['mercy'])
 
 
-# In[3]:
+# In[10]:
 
 # Scale
 
@@ -101,7 +101,7 @@ def scale_data(unscaled_X, unscaled_y):
     return X, y, scaler_X
 
 
-# In[4]:
+# In[11]:
 
 # Model
 
@@ -138,7 +138,7 @@ def get_model(hero):
     return model
 
 
-# In[5]:
+# In[12]:
 
 # Train wrapper
 
@@ -172,7 +172,7 @@ def get_hero_model(hero, from_file=False):
     return history, model, scaler_X
 
 
-# In[6]:
+# In[13]:
 
 # Predict
 
@@ -189,7 +189,7 @@ def predict_sr(model, player, scaler_for_X, hero):
     return int(sr)
 
 
-# In[7]:
+# In[14]:
 
 # View
 
@@ -231,7 +231,7 @@ plt.legend(list(specific_stats), loc='lower left')
 plt.show()
 
 
-# In[9]:
+# In[15]:
 
 # Load models from disk
 
@@ -242,7 +242,7 @@ for hero in specific_stats:
     models[hero] = get_hero_model(hero, from_file=True)
 
 
-# In[10]:
+# In[16]:
 
 # Predict using all viable models
 
@@ -265,7 +265,7 @@ def predict_all(player):
     return int(np.average(sr_predictions, weights=time_played))
 
 
-# In[ ]:
+# In[17]:
 
 # Test
 

@@ -12,7 +12,7 @@ from OverwatchGatherData import Player, find_usernames
 import numpy as np
 import os
 
-np.random.seed(12321)
+np.random.seed(123)
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.externals import joblib
@@ -21,6 +21,8 @@ from keras.layers.normalization import BatchNormalization
 from keras.models import Sequential, load_model
 from keras.callbacks import EarlyStopping
 from keras.layers import Dense, Dropout
+
+import keras.backend as K
 
 import matplotlib.pyplot as plt
 
@@ -60,6 +62,8 @@ def generate_players():
             yield player
 
 def load_data(get_vector):
+    
+    data_len = 0
 
     unscaled_X, unscaled_y = [], []
 
@@ -67,14 +71,20 @@ def load_data(get_vector):
 
         rank = get_competitive_rank(player, 'us')
 
-        if rank:
+        if rank and rank > 100:
             
             playtime = player.json['us']['stats']['competitive']['game_stats']['time_played']
             
-            if playtime > 18:
+            if playtime > 25:
 
                 unscaled_X.append(get_vector(player, 'us'))
                 unscaled_y.append(rank)
+                
+                data_len += 1
+                
+                if data_len > 20000:
+                    
+                    break
 
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
     unscaled_y = np.array(unscaled_y, dtype=np.float64)
@@ -101,6 +111,9 @@ def scale_data(unscaled_X, unscaled_y):
 
 def scale_data2(unscaled_X, unscaled_y):
     
+    plt.hist(unscaled_y)
+    plt.show()
+    
     scaler_X = StandardScaler()
 
     X = scaler_X.fit_transform(unscaled_X)
@@ -110,6 +123,19 @@ def scale_data2(unscaled_X, unscaled_y):
 
 
 # In[4]:
+
+# Metric
+
+def acc_metric(y_true, y_pred):
+    """
+    Accuracy
+    """
+    diff = K.abs(y_pred - y_true) < 0.1 # Within 100 SR
+    
+    return K.mean(diff, axis=-1)
+
+
+# In[5]:
 
 # Keras Model
 
@@ -145,31 +171,39 @@ def get_model3():
         
     model = Sequential()
         
-    model.add(Dense(30, input_dim=len(hero_stats), kernel_initializer='normal', activation='relu'))
+    model.add(Dense(35, input_dim=len(hero_stats), kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
         
-    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(35, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
         
-    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(35, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
         
-    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(35, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(35, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(35, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+    
+    model.add(Dense(35, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+    
+    model.add(Dense(35, kernel_initializer='normal', activation='relu'))
     
     model.add(Dense(1))
 
-    model.compile(loss='mean_squared_error', optimizer='adam')
+    model.compile(loss='mean_squared_error', optimizer='adam', metrics=[acc_metric])
     
     return model
 
@@ -213,7 +247,7 @@ def get_model_from_file():
     return model, scalar
 
 
-# In[5]:
+# In[6]:
 
 # Learning function. Wrapper for keras model.fit( ... )
 
@@ -221,12 +255,16 @@ def train_model(model, *args, **kwargs):
     
     # print(model.summary())
 
-    history = model.fit(*args, **kwargs, shuffle=True, validation_split=.10, verbose=0, callbacks=[EarlyStopping(patience=30)])
+    history = model.fit(*args, **kwargs, 
+                        shuffle=True, 
+                        validation_split=.10,
+                        verbose=0, 
+                        callbacks=[EarlyStopping(patience=30)])
     
     return history
 
 
-# In[6]:
+# In[7]:
 
 # Predict SR
 
@@ -255,7 +293,7 @@ def predict_sr2(model, player, scaler_for_X, get_vector):
     return int(sr)
 
 
-# In[7]:
+# In[8]:
 
 # Stats
 
@@ -269,63 +307,68 @@ def view(history):
     plt.legend(['Train', 'Test'], loc='upper right')
     plt.show()
     
-    plt.plot(np.sqrt(history.history['loss']) * 5000)
-    plt.plot(np.sqrt(history.history['val_loss']) * 5000)
-    plt.title('Model Accuracy')
+    plt.plot(history.history['acc_metric'])
+    plt.plot(history.history['val_acc_metric'])
+    plt.title('Model Accuracy (Within 100 SR)')
     plt.ylabel('Avg Accuracy')
     plt.xlabel('epoch')
-    plt.ylim([0, 1250])
     plt.legend(['Train', 'Test'], loc='upper right')
     plt.show()
     
 
 
-# In[8]:
+# In[9]:
 
 # Run (Load)
 
-get_vector = lambda player, region : get_vector_herostats(player, region)
+if __name__ == "__main__":
 
-data = load_data(get_vector)
+    get_vector = lambda player, region : get_vector_herostats(player, region)
 
-X, y, scaler_X = scale_data2(*data)
-
-
-# In[9]:
-
-# Run (Train)
-
-model = get_model3()
-
-history = train_model(model, X, y, epochs=1500, batch_size=256)
-
-model.save(os.path.join('models', 'overall-sr.h5'))
-joblib.dump(scaler_X, os.path.join('models', 'overall-sr.pkl'))
-
-view(history)
+    X, y, scaler_X = scale_data2(*load_data(get_vector))
 
 
 # In[10]:
 
+# Run (Train)
+
+if __name__ == "__main__":
+
+    model = get_model3()
+
+    history = train_model(model, X, y, epochs=1000, batch_size=32)
+    
+    model.save(os.path.join('models', 'overall-sr.h5'))
+    joblib.dump(scaler_X, os.path.join('models', 'overall-sr.pkl'))
+
+    view(history)
+
+
+# In[ ]:
+
 # Run (Load from disk)
 
-get_vector = lambda player, region : get_vector_herostats(player, region)
+if __name__ == "__main__":
 
-model, scaler_X = get_model_from_file()
+    get_vector = lambda player, region : get_vector_herostats(player, region)
+
+    model, scaler_X = get_model_from_file()
 
 
 # In[ ]:
 
 # Run (Test)
 
-with open('test_names.txt', 'r') as test:
+if __name__ == "__main__":
 
-    for battletag in find_usernames(test.read()):
+    with open('test_names.txt', 'r') as test:
+
+        for battletag in find_usernames(test.read()):
         
-        player = Player.from_web_battletag(battletag)
+            player = Player.from_web_battletag(battletag)
         
-        actual = get_competitive_rank(player, 'us')
-        p = predict_sr2(model, player, scaler_X, get_vector)
+            actual = get_competitive_rank(player, 'us')
+            p = predict_sr2(model, player, scaler_X, get_vector)
         
-        print('{} is {}, predicted {}'.format(battletag, actual, p))
+            print('{} is {}, predicted {}'.format(battletag, actual, p))
 

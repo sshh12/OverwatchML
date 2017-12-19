@@ -234,7 +234,9 @@ def dl_overwatchtracker():
 
 # Run
 
-# dl_spreedsheet()
-# dl_reddit()
-# dl_overwatchtracker()
+if __name__ == "__main__":
+    
+    dl_spreedsheet()
+    dl_reddit()
+    dl_overwatchtracker()
 
