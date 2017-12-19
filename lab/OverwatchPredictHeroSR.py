@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[8]:
+# In[1]:
 
 # Imports
 
@@ -22,10 +22,12 @@ from keras.models import Sequential, load_model
 from keras.callbacks import EarlyStopping
 from keras.layers import Dense, Dropout
 
+import keras.backend as K
+
 import matplotlib.pyplot as plt
 
 
-# In[9]:
+# In[2]:
 
 # Loading Data
 
@@ -87,7 +89,7 @@ def load_data(hero):
 len(specific_stats), len(specific_stats['mercy'])
 
 
-# In[10]:
+# In[3]:
 
 # Scale
 
@@ -101,7 +103,20 @@ def scale_data(unscaled_X, unscaled_y):
     return X, y, scaler_X
 
 
-# In[11]:
+# In[4]:
+
+# Metric
+
+def acc_metric(y_true, y_pred):
+    """
+    Accuracy
+    """
+    diff = K.abs(y_pred - y_true) < .05 # Within 250 SR
+    
+    return K.mean(diff, axis=-1)
+
+
+# In[5]:
 
 # Model
 
@@ -109,36 +124,36 @@ def get_model(hero):
     
     model = Sequential()
     
-    model.add(Dense(24, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
     
-    model.add(Dense(24, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
 
     model.add(Dense(1, kernel_initializer='normal'))
     
-    model.compile(loss='mean_squared_error', optimizer='adam')
+    model.compile(loss='mean_squared_error', optimizer='adam', metrics=[acc_metric])
     
     return model
 
 
-# In[12]:
+# In[6]:
 
 # Train wrapper
 
@@ -172,7 +187,7 @@ def get_hero_model(hero, from_file=False):
     return history, model, scaler_X
 
 
-# In[13]:
+# In[7]:
 
 # Predict
 
@@ -189,7 +204,7 @@ def predict_sr(model, player, scaler_for_X, hero):
     return int(sr)
 
 
-# In[14]:
+# In[8]:
 
 # View
 
@@ -202,18 +217,9 @@ def view(history):
     plt.xlabel('epoch')
     plt.legend(['Train', 'Test'], loc='upper right')
     plt.show()
-    
-    plt.plot(np.sqrt(history.history['loss']) * 5000)
-    plt.plot(np.sqrt(history.history['val_loss']) * 5000)
-    plt.title('Model Accuracy')
-    plt.ylabel('Avg Accuracy')
-    plt.xlabel('epoch')
-    plt.ylim([0, 1250])
-    plt.legend(['Train', 'Test'], loc='upper left')
-    plt.show()
 
 
-# In[8]:
+# In[9]:
 
 # Run
 
@@ -221,19 +227,21 @@ for hero in specific_stats:
     
     history, model, _ = get_hero_model(hero)
     
-    plt.plot(np.sqrt(history.history['val_loss']) * 5000)
+    plt.plot(history.history['val_acc_metric'])
     
 plt.title('Model Accuracy')
-plt.ylabel('Avg Accuracy')
+plt.ylabel('Avg +/-250 Accuracy')
 plt.xlabel('epoch')
-plt.ylim([0, 1300])
 plt.legend(list(specific_stats), loc='lower left')
 plt.show()
 
 
-# In[15]:
+# In[ ]:
 
 # Load models from disk
+
+import keras.metrics
+keras.metrics.acc_metric = acc_metric # Weird Patch
 
 models = {}
 
@@ -242,7 +250,7 @@ for hero in specific_stats:
     models[hero] = get_hero_model(hero, from_file=True)
 
 
-# In[16]:
+# In[ ]:
 
 # Predict using all viable models
 
@@ -265,7 +273,7 @@ def predict_all(player):
     return int(np.average(sr_predictions, weights=time_played))
 
 
-# In[17]:
+# In[ ]:
 
 # Test
 

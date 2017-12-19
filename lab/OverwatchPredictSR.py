@@ -82,7 +82,7 @@ def load_data(get_vector):
                 
                 data_len += 1
                 
-                if data_len > 20000:
+                if data_len > 30000:
                     
                     break
 
@@ -130,7 +130,7 @@ def acc_metric(y_true, y_pred):
     """
     Accuracy
     """
-    diff = K.abs(y_pred - y_true) < 0.1 # Within 100 SR
+    diff = K.abs(y_pred - y_true) < 0.05 # Within 250 SR
     
     return K.mean(diff, axis=-1)
 
@@ -309,7 +309,7 @@ def view(history):
     
     plt.plot(history.history['acc_metric'])
     plt.plot(history.history['val_acc_metric'])
-    plt.title('Model Accuracy (Within 100 SR)')
+    plt.title('Model Accuracy (+/- 250 SR)')
     plt.ylabel('Avg Accuracy')
     plt.xlabel('epoch')
     plt.legend(['Train', 'Test'], loc='upper right')
