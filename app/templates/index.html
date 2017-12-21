@@ -92,9 +92,9 @@ let run = () => {
       resp.json().then((json) => {
         $('#results').css('display', 'block');
         $('#predictBtn').text('Predict');
-        alert(JSON.stringify(json));
         $('#predictSR').text(json.predictedrank)
         $('#actualSR').text(json.actualrank)
+        console.log(json);
       });
     });
 
