@@ -28,7 +28,7 @@ def predict(battletag=''):
         'specifics': {
             'sr': sr_predictions,
             'heros': heros,
-            'time_played': time_played
+            'timeplayed': time_played
         }
     })
     response.headers.add('Access-Control-Allow-Origin', '*')

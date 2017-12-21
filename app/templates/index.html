@@ -37,10 +37,11 @@
             <div class="panel-heading">Results</div>
             <div class="panel-body">
                 <div class="row">
-                    <h2 id="predictSR"></h2>
-                    <h2 id="actualSR"></h2>
-                    <button class="btn btn-primary">Hi!</button>
+                    <h3 id="predictSR">Predicted ----</h3>
+                    <h5 id="actualSR">Actual ----</h5>
                 </div>
+                <ul class="list-group" id="specifics">
+                </ul>
             </div>
         </div>
 
@@ -92,8 +93,13 @@ let run = () => {
       resp.json().then((json) => {
         $('#results').css('display', 'block');
         $('#predictBtn').text('Predict');
-        $('#predictSR').text(json.predictedrank)
-        $('#actualSR').text(json.actualrank)
+        $('#predictSR').text('Predicted ' + json.predictedrank)
+        $('#actualSR').text('Actual ' + json.actualrank)
+
+        $('#specifics').html('');
+        for(let i in json.specifics.heros) {
+          $('#specifics').append(`<li class="list-group-item"><p><b>${json.specifics.heros[i]}</b></p> Predicted ${json.specifics.sr[i]} given ${json.specifics.timeplayed[i].toFixed(2)} hour(s)</li>`);
+        }
         console.log(json);
       });
     });

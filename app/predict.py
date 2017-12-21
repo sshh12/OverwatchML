@@ -85,18 +85,24 @@ def predict_sr(player_json, hero):
 
 ## Predict with all heros
 
-def predict_all(player_json, min_time_played=.2):
+def predict_all(player_json, min_time_played=.25):
 
     sr_predictions, heros, time_played = [], [], []
 
-    for hero in specific_stats:
+    try:
 
         player_hero_stats = player_json['us']['heroes']['stats']['competitive']
+
+    except (TypeError, KeyError):
+
+        return -1, ([], [], [])
+
+    for hero in specific_stats:
 
         if hero in player_hero_stats and player_hero_stats[hero]['general_stats']['time_played'] >= min_time_played:
 
             sr_predictions.append(predict_sr(player_json, hero))
-            heros.append(hero)
+            heros.append(hero.title())
             time_played.append(player_hero_stats[hero]['general_stats']['time_played'])
 
     overall_sr = int(np.average(sr_predictions, weights=time_played)) # Weighted average of sr by time played
