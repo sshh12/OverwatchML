@@ -102,5 +102,6 @@ ENV/
 
 # Other
 profiles/
+profiles-old/
 makepython.bat
 test_names.txt

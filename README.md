@@ -8,7 +8,17 @@ The goal of this project is to use player statistics ingame to predict their SR 
 
 Applying the Model
 
-TODO
+#### Tools
+* [Flask](http://flask.pocoo.org/)
+* [Requests](http://docs.python-requests.org/en/master/)
+* [Keras](https://keras.io/)
+* [Numpy](http://www.numpy.org/)
+* [Sklearn](http://scikit-learn.org/stable/)
+
+#### Install
+1. Install Tools
+2. ```git clone https://github.com/sshh12/OverwatchML.git```
+3. Run ```python app/app.py```
 
 ## Lab
 
