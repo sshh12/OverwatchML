@@ -186,7 +186,7 @@ def dl_spreedsheet(): # Retrieves all 1000+ battletags from the spreedsheet
         save_profile(battletag)
 
 
-# In[7]:
+# In[ ]:
 
 
 ow_tracker_methods = ['MostEliminations', 'MostDamageDone', 
@@ -200,43 +200,35 @@ ow_tracker_methods = ['MostEliminations', 'MostDamageDone',
                       'MultiKills', 'Deaths', 
                       'GamesPlayed', 'TimeSpentOnFire', 
                       'ObjectiveTime', 'TimePlayed']
-
-def get_overwatchtracker_pages(method, pages=1000, random=False):
-    
-    for i in range(pages):
+  
+def dl_overwatchtracker(limit=None):
         
-        page_num = i + 1
+        if limit == None: limit = 99999
         
-        if random:
+        while limit > 0:
             
+            method = random.choice(ow_tracker_methods)
             page_num = random.randrange(1, 1400)
-        
-        yield requests.get('https://overwatchtracker.com/leaderboards/pc/global/{}?page={}&mode=1'.format(method, page_num)).text
-
-def dl_overwatchtracker():
-        
-    for method in ow_tracker_methods:
-        
-        try:
-
-            for page in get_overwatchtracker_pages(method, pages=300, random=True):
+            
+            try:
+            
+                page = requests.get('https://overwatchtracker.com/leaderboards/pc/global/{}?page={}&mode=1'.format(method, page_num)).text
 
                 for battletag in find_usernames(page):
 
                     save_profile(battletag)
                     
-        except Exception as e:
-            
-            print(e)
+                    limit -= 1
+                    
+            except Exception as e:
+                print(e)
 
 
-# In[8]:
+# In[ ]:
 
 # Run
 
 if __name__ == "__main__":
     
-    dl_spreedsheet()
-    dl_reddit()
     dl_overwatchtracker()
 
