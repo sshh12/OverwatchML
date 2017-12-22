@@ -27,7 +27,7 @@ import keras.backend as K
 import matplotlib.pyplot as plt
 
 
-# In[12]:
+# In[2]:
 
 # Loading Data
 
@@ -224,7 +224,7 @@ def view(history):
     plt.show()
 
 
-# In[35]:
+# In[9]:
 
 # Run
 
