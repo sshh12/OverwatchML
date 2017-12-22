@@ -27,7 +27,7 @@ import keras.backend as K
 import matplotlib.pyplot as plt
 
 
-# In[2]:
+# In[12]:
 
 # Loading Data
 
@@ -49,11 +49,16 @@ def generate_players():
     
     for filename in os.listdir(os.path.join('..', 'profiles')):
         
-        player = Player.from_file(os.path.join('..', 'profiles', filename))
-        
-        if 'error' not in player.json:
+        try: # If it can't read the player then just ignore file
             
-            yield player
+            player = Player.from_file(os.path.join('..', 'profiles', filename))
+        
+            if 'error' not in player.json:
+
+                yield player
+                
+        except:
+            pass
 
 def load_data(hero):
 
@@ -126,27 +131,29 @@ def get_model(hero):
     
     model.add(Dense(30, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
     
     model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
     
     model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
     
     model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
     
     model.add(Dense(30, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
     
     model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.3))
 
-    model.add(Dense(1, kernel_initializer='normal'))
+    model.add(Dense(1))
     
     model.compile(loss='mean_squared_error', optimizer='adam', metrics=[acc_metric])
     
@@ -173,13 +180,11 @@ def get_hero_model(hero, from_file=False):
         
         return None, model, scaler_X
     
-    print('TRAINING ' + hero)
-    
     X, y, scaler_X = scale_data(*load_data(hero))
 
     model = get_model(hero)
 
-    history = train_model(model, X, y, epochs=1500, batch_size=256)
+    history = train_model(model, X, y, epochs=1500, batch_size=128)
 
     model.save(os.path.join('..', 'models', '{}-sr.h5'.format(hero)))
     joblib.dump(scaler_X, os.path.join('..', 'models', '{}-sr.pkl'.format(hero)))
@@ -219,20 +224,30 @@ def view(history):
     plt.show()
 
 
-# In[9]:
+# In[35]:
 
 # Run
 
+history_db = {}
+
+f, (loss_plot, acc_plot) = plt.subplots(2, 1, sharex=True)
+
 for hero in specific_stats:
+    
+    print('Training ' + hero.title())
     
     history, model, _ = get_hero_model(hero)
     
-    plt.plot(history.history['val_acc_metric'])
+    loss, acc = np.log(history.history['val_loss']), history.history['val_acc_metric']
     
-plt.title('Model Accuracy')
-plt.ylabel('Avg +/-250 Accuracy')
-plt.xlabel('epoch')
-plt.legend(list(specific_stats), loc='lower left')
+    loss_plot.plot(loss)
+    acc_plot.plot(acc)
+    
+    history_db[hero] = [loss, acc]
+    
+loss_plot.set_title('Log Loss')
+acc_plot.set_title('Accuracy (+/- 250 SR)')
+
 plt.show()
 
 
