@@ -77,8 +77,13 @@ def get_vector_herostats(player, region, gametype='competitive', stat_keys=None)
             hero, stat_type, value = stat.split(" ")
 
             try:
+                
+                stat_num = stats[hero][stat_type][value]
+                
+                if isinstance(stat_num, str):
+                    stat_num = float(stat_num.replace('%', ''))
 
-                vector.append(stats[hero][stat_type][value])
+                vector.append(stat_num)
 
             except (TypeError, KeyError):
 

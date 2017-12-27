@@ -19,7 +19,7 @@ from sklearn.externals import joblib
 
 from keras.layers.normalization import BatchNormalization
 from keras.models import Sequential, load_model
-from keras.callbacks import EarlyStopping
+from keras.callbacks import ReduceLROnPlateau, EarlyStopping, ModelCheckpoint
 from keras.layers import Dense, Dropout
 
 import keras.backend as K
@@ -45,24 +45,34 @@ for stat in hero_stats:
         
         specific_stats[hero] = [stat]
 
-def generate_players():
+def generate_players(limit=1e10):
     
     for filename in os.listdir(os.path.join('..', 'profiles')):
+        
+        if limit < 0: return
         
         try: # If it can't read the player then just ignore file
             
             player = Player.from_file(os.path.join('..', 'profiles', filename))
         
-            if 'error' not in player.json:
+            if 'error' not in player.json and get_competitive_rank(player, 'us'):
 
                 yield player
+                
+                limit -= 1
+                
+            else: # Throw Away
+                
+                print('Deleting Profile...', filename)
+                
+                os.remove(os.path.join('..', 'profiles', filename))
                 
         except:
             pass
 
-def load_data(hero):
-
-    unscaled_X, unscaled_y = [], []
+def load_data():
+    
+    raw_data = {}
 
     for player in generate_players():
 
@@ -70,26 +80,34 @@ def load_data(hero):
 
         if rank:
             
-            try:
+            comp_stats = player.json['us']['heroes']['stats']['competitive']
                 
-                time_played = player.json['us']['heroes']['stats']['competitive'][hero]['general_stats']['time_played']
+            for hero in comp_stats:
                 
-                if time_played >= .5:
-                
-                    unscaled_X.append(get_vector_herostats(player, 'us', stat_keys=specific_stats[hero]))
-                    unscaled_y.append(rank)
-                
-            except:
-                
-                pass
-           
+                try:
+                    time_played = comp_stats[hero]['general_stats']['time_played']
+                except:
+                    time_played = -1
 
-    unscaled_X = np.array(unscaled_X, dtype=np.float64)
-    unscaled_y = np.array(unscaled_y, dtype=np.float64)
+                if time_played >= .4: # Min Time Played
+                        
+                    if hero not in raw_data: raw_data[hero] = [], []
+
+                    raw_data[hero][0].append(get_vector_herostats(player, 'us', stat_keys=specific_stats[hero]))
+                    raw_data[hero][1].append(rank)
+            
+    for hero in raw_data:
+        
+        unscaled_X, unscaled_y = raw_data[hero]
+
+        unscaled_X = np.array(unscaled_X, dtype=np.float64)
+        unscaled_y = np.array(unscaled_y, dtype=np.float64)
     
-    print(unscaled_X.shape, unscaled_y.shape)
+        print(hero.title(), unscaled_X.shape, unscaled_y.shape)
+        
+        raw_data[hero] = unscaled_X, unscaled_y
     
-    return unscaled_X, unscaled_y
+    return raw_data
 
 len(specific_stats), len(specific_stats['mercy'])
 
@@ -98,7 +116,9 @@ len(specific_stats), len(specific_stats['mercy'])
 
 # Scale
 
-def scale_data(unscaled_X, unscaled_y):
+def scale_data(hero_data):
+    
+    unscaled_X, unscaled_y = hero_data
     
     scaler_X = StandardScaler()
 
@@ -116,7 +136,7 @@ def acc_metric(y_true, y_pred):
     """
     Accuracy
     """
-    diff = K.abs(y_pred - y_true) < .05 # Within 250 SR
+    diff = K.abs(y_pred - y_true) * 5000
     
     return K.mean(diff, axis=-1)
 
@@ -129,29 +149,29 @@ def get_model(hero):
     
     model = Sequential()
     
-    model.add(Dense(30, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='relu'))
+    model.add(Dense(40, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='selu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.3))
+    model.add(Dropout(0.4))
     
-    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(40, kernel_initializer='normal', activation='selu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.3))
+    model.add(Dropout(0.4))
     
-    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(40, kernel_initializer='normal', activation='selu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.3))
+    model.add(Dropout(0.4))
     
-    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(40, kernel_initializer='normal', activation='selu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.3))
+    model.add(Dropout(0.4))
     
-    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(40, kernel_initializer='normal', activation='selu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.3))
+    model.add(Dropout(0.4))
     
-    model.add(Dense(30, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(40, kernel_initializer='normal', activation='selu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.3))
+    model.add(Dropout(0.4))
 
     model.add(Dense(1))
     
@@ -166,11 +186,11 @@ def get_model(hero):
 
 def train_model(model, *args, **kwargs):
 
-    history = model.fit(*args, **kwargs, shuffle=True, validation_split=.10, verbose=0, callbacks=[EarlyStopping(patience=25)])
+    history = model.fit(*args, **kwargs, shuffle=True, validation_split=.10, verbose=0)
     
     return history
 
-def get_hero_model(hero, from_file=False):
+def get_hero_model(hero, hero_data=None, from_file=False):
     
     if from_file:
         
@@ -180,14 +200,22 @@ def get_hero_model(hero, from_file=False):
         
         return None, model, scaler_X
     
-    X, y, scaler_X = scale_data(*load_data(hero))
+    X, y, scaler_X = hero_data
 
     model = get_model(hero)
-
-    history = train_model(model, X, y, epochs=1500, batch_size=128)
-
-    model.save(os.path.join('..', 'models', '{}-sr.h5'.format(hero)))
+    
+    ## Callbacks ##
+    reduce_LR = ReduceLROnPlateau(monitor='val_loss', factor=0.9, patience=20, min_lr=1e-7, verbose=0)
+    e_stopping = EarlyStopping(patience=35)
+    checkpoint = ModelCheckpoint(os.path.join('..', 'models', '{}-sr.h5'.format(hero)), 
+                                 monitor='val_acc_metric', 
+                                 verbose=0,
+                                 save_best_only=True)
+    ###############
+    
     joblib.dump(scaler_X, os.path.join('..', 'models', '{}-sr.pkl'.format(hero)))
+
+    history = train_model(model, X, y, epochs=1500, batch_size=128, callbacks=[reduce_LR, e_stopping, checkpoint])
     
     return history, model, scaler_X
 
@@ -211,44 +239,48 @@ def predict_sr(model, player, scaler_for_X, hero):
 
 # In[8]:
 
-# View
-
-def view(history):
-    
-    plt.plot(np.log(history.history['loss']))
-    plt.plot(np.log(history.history['val_loss']))
-    plt.title('Model Loss')
-    plt.ylabel('Log(loss)')
-    plt.xlabel('epoch')
-    plt.legend(['Train', 'Test'], loc='upper right')
-    plt.show()
-
-
-# In[9]:
-
 # Run
 
-history_db = {}
+if __name__ == "__main__":
+    
+    all_data = {}
+    
+    raw_data = load_data()
+    
+    for hero in raw_data:
+        
+        all_data[hero] = scale_data(raw_data[hero])
 
-f, (loss_plot, acc_plot) = plt.subplots(2, 1, sharex=True)
 
-for hero in specific_stats:
-    
-    print('Training ' + hero.title())
-    
-    history, model, _ = get_hero_model(hero)
-    
-    loss, acc = np.log(history.history['val_loss']), history.history['val_acc_metric']
-    
-    loss_plot.plot(loss)
-    acc_plot.plot(acc)
-    
-    history_db[hero] = [loss, acc]
-    
-loss_plot.set_title('Log Loss')
-acc_plot.set_title('Accuracy (+/- 250 SR)')
+# In[ ]:
 
-plt.show()
+# Run 
+
+if __name__ == "__main__":
+
+    history_db = {}
+
+    f, (loss_plot, acc_plot) = plt.subplots(2, 1, sharex=True)
+
+    for hero in specific_stats:
+
+        print('Training ' + hero.title())
+
+        history, model, _ = get_hero_model(hero, hero_data=all_data[hero])
+
+        loss, acc = np.log(history.history['val_loss']), history.history['val_acc_metric']
+
+        loss_plot.plot(loss)
+        acc_plot.plot(acc)
+
+        history_db[hero] = [loss, acc]
+
+        print(np.mean(acc[-10]))
+
+    loss_plot.set_title('Log Loss')
+    acc_plot.set_title('Accuracy')
+
+    plt.show()
 
 
 # In[ ]:
@@ -278,7 +310,7 @@ def predict_all(player):
         
         player_hero_stats = player.json['us']['heroes']['stats']['competitive']
 
-        if hero in player_hero_stats and player_hero_stats[hero]['general_stats']['time_played'] >= .2:
+        if hero in player_hero_stats and player_hero_stats[hero]['general_stats']['time_played'] >= .4:
 
             _, model, scaler = models[hero]
                 

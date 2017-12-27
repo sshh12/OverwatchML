@@ -59,7 +59,12 @@ def get_vector_herostats(player_json, stat_keys=None):
 
         try:
 
-            vector.append(stats[hero][stat_type][value])
+            stat_num = stats[hero][stat_type][value]
+                
+            if isinstance(stat_num, str):
+                stat_num = float(stat_num.replace('%', ''))
+
+            vector.append(stat_num)
 
         except (TypeError, KeyError):
 
@@ -83,9 +88,9 @@ def predict_sr(player_json, hero):
 
     return int(sr)
 
-## Predict with all heros
+## Predict with all heroes
 
-def predict_all(player_json, min_time_played=.25):
+def predict_all(player_json, min_time_played=.4):
 
     sr_predictions, heros, time_played = [], [], []
 
