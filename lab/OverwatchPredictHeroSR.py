@@ -149,29 +149,37 @@ def get_model(hero):
     
     model = Sequential()
     
-    model.add(Dense(40, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='selu'))
+    model.add(Dense(160, input_dim=len(specific_stats[hero]), kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.4))
+    model.add(Dropout(0.5))
     
-    model.add(Dense(40, kernel_initializer='normal', activation='selu'))
+    model.add(Dense(160, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.4))
+    model.add(Dropout(0.5))
     
-    model.add(Dense(40, kernel_initializer='normal', activation='selu'))
+    model.add(Dense(160, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.4))
+    model.add(Dropout(0.5))
     
-    model.add(Dense(40, kernel_initializer='normal', activation='selu'))
+    model.add(Dense(160, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.4))
+    model.add(Dropout(0.5))
     
-    model.add(Dense(40, kernel_initializer='normal', activation='selu'))
+    model.add(Dense(160, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.4))
+    model.add(Dropout(0.5))
     
-    model.add(Dense(40, kernel_initializer='normal', activation='selu'))
+    model.add(Dense(100, kernel_initializer='normal', activation='relu'))
     model.add(BatchNormalization())
-    model.add(Dropout(0.4))
+    model.add(Dropout(0.2))
+    
+    model.add(Dense(100, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.2))
+    
+    model.add(Dense(100, kernel_initializer='normal', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.1))
 
     model.add(Dense(1))
     
@@ -205,7 +213,7 @@ def get_hero_model(hero, hero_data=None, from_file=False):
     model = get_model(hero)
     
     ## Callbacks ##
-    reduce_LR = ReduceLROnPlateau(monitor='val_loss', factor=0.9, patience=20, min_lr=1e-7, verbose=0)
+    reduce_LR = ReduceLROnPlateau(monitor='val_loss', factor=0.7, patience=10, min_lr=1e-8, verbose=0)
     e_stopping = EarlyStopping(patience=35)
     checkpoint = ModelCheckpoint(os.path.join('..', 'models', '{}-sr.h5'.format(hero)), 
                                  monitor='val_acc_metric', 
@@ -215,7 +223,7 @@ def get_hero_model(hero, hero_data=None, from_file=False):
     
     joblib.dump(scaler_X, os.path.join('..', 'models', '{}-sr.pkl'.format(hero)))
 
-    history = train_model(model, X, y, epochs=1500, batch_size=128, callbacks=[reduce_LR, e_stopping, checkpoint])
+    history = train_model(model, X, y, epochs=2000, batch_size=64, callbacks=[reduce_LR, e_stopping, checkpoint])
     
     return history, model, scaler_X
 
@@ -252,7 +260,7 @@ if __name__ == "__main__":
         all_data[hero] = scale_data(raw_data[hero])
 
 
-# In[ ]:
+# In[9]:
 
 # Run 
 
@@ -269,6 +277,11 @@ if __name__ == "__main__":
         history, model, _ = get_hero_model(hero, hero_data=all_data[hero])
 
         loss, acc = np.log(history.history['val_loss']), history.history['val_acc_metric']
+ 
+        loss_plot.plot(loss)
+        acc_plot.plot(acc)
+        
+        loss, acc = np.log(history.history['loss']), history.history['acc_metric']
 
         loss_plot.plot(loss)
         acc_plot.plot(acc)
@@ -287,14 +300,16 @@ if __name__ == "__main__":
 
 # Load models from disk
 
-import keras.metrics
-keras.metrics.acc_metric = acc_metric # Weird Patch
+if __name__ == "__main__":
 
-models = {}
+    import keras.metrics
+    keras.metrics.acc_metric = acc_metric # Weird Patch
 
-for hero in specific_stats:
-    
-    models[hero] = get_hero_model(hero, from_file=True)
+    models = {}
+
+    for hero in specific_stats:
+
+        models[hero] = get_hero_model(hero, from_file=True)
 
 
 # In[ ]:
@@ -324,14 +339,16 @@ def predict_all(player):
 
 # Test
 
-with open('test_names.txt', 'r') as test:
+if __name__ == "__main__":
 
-    for battletag in find_usernames(test.read()):
-        
-        player = Player.from_web_battletag(battletag)
-        
-        actual = get_competitive_rank(player, 'us')
-        p = predict_all(player)
-        
-        print("{} is {}, predicted {}".format(battletag, actual, p))
+    with open('test_names.txt', 'r') as test:
+
+        for battletag in find_usernames(test.read()):
+
+            player = Player.from_web_battletag(battletag)
+
+            actual = get_competitive_rank(player, 'us')
+            p = predict_all(player)
+
+            print("{} is {}, predicted {}".format(battletag, actual, p))
 

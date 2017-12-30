@@ -27,7 +27,7 @@ import keras.backend as K
 import matplotlib.pyplot as plt
 
 
-# In[2]:
+# In[6]:
 
 # Load Data
 
@@ -51,19 +51,32 @@ for stat in hero_stats:
         
 ## Loading Data
         
-def generate_players():
+def generate_players(limit=1e10):
     
     for filename in os.listdir(os.path.join('..', 'profiles')):
         
-        player = Player.from_file(os.path.join('..', 'profiles', filename))
+        if limit < 0: return
         
-        if 'error' not in player.json:
+        try: # If it can't read the player then just ignore file
             
-            yield player
+            player = Player.from_file(os.path.join('..', 'profiles', filename))
+        
+            if 'error' not in player.json and get_competitive_rank(player, 'us'):
+
+                yield player
+                
+                limit -= 1
+                
+            else: # Throw Away
+                
+                print('Deleting Profile...', filename)
+                
+                os.remove(os.path.join('..', 'profiles', filename))
+                
+        except:
+            pass
 
 def load_data(get_vector):
-    
-    data_len = 0
 
     unscaled_X, unscaled_y = [], []
 
@@ -79,12 +92,6 @@ def load_data(get_vector):
 
                 unscaled_X.append(get_vector(player, 'us'))
                 unscaled_y.append(rank)
-                
-                data_len += 1
-                
-                if data_len > 30000:
-                    
-                    break
 
     unscaled_X = np.array(unscaled_X, dtype=np.float64)
     unscaled_y = np.array(unscaled_y, dtype=np.float64)
@@ -122,7 +129,7 @@ def scale_data2(unscaled_X, unscaled_y):
     return X, y, scaler_X
 
 
-# In[4]:
+# In[7]:
 
 # Metric
 
@@ -130,7 +137,7 @@ def acc_metric(y_true, y_pred):
     """
     Accuracy
     """
-    diff = K.abs(y_pred - y_true) < 0.05 # Within 250 SR
+    diff = K.abs(y_pred - y_true) * 5000
     
     return K.mean(diff, axis=-1)
 
@@ -309,7 +316,7 @@ def view(history):
     
     plt.plot(history.history['acc_metric'])
     plt.plot(history.history['val_acc_metric'])
-    plt.title('Model Accuracy (+/- 250 SR)')
+    plt.title('Model Accuracy')
     plt.ylabel('Avg Accuracy')
     plt.xlabel('epoch')
     plt.legend(['Train', 'Test'], loc='upper right')
@@ -317,7 +324,7 @@ def view(history):
     
 
 
-# In[9]:
+# In[8]:
 
 # Run (Load)
 
