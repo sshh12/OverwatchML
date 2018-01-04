@@ -20,10 +20,15 @@ def predict(battletag=''):
 
     overall_sr, (sr_predictions, heros, time_played) = predict_all(api_json)
 
+    try:
+        actual_sr = int(api_json['us']['stats']['competitive']['overall_stats']['comprank'])
+    except (TypeError, KeyError):
+        actual_sr = -1
+
     response = jsonify({
         'battletag': battletag,
         'api': api_json,
-        'actualrank': int(api_json['us']['stats']['competitive']['overall_stats']['comprank']),
+        'actualrank': actual_sr,
         'predictedrank': overall_sr,
         'specifics': {
             'sr': sr_predictions,

@@ -7,7 +7,7 @@ import os
 
 import keras.backend as K
 import keras.metrics
-keras.metrics.acc_metric = lambda a, b: K.mean(K.abs(b - a) < .05, axis=-1)
+keras.metrics.acc_metric = lambda a, b: K.mean(K.abs(b - a) * 5000), axis=-1)
 
 ## Options
 MODEL_PATH = os.path.join('..', 'models')
@@ -60,7 +60,7 @@ def get_vector_herostats(player_json, stat_keys=None):
         try:
 
             stat_num = stats[hero][stat_type][value]
-                
+
             if isinstance(stat_num, str):
                 stat_num = float(stat_num.replace('%', ''))
 
